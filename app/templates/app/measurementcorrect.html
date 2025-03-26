@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Measurement</title>
+   
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/measurement_data.css'%}">
+    
+</head>
+<body>
+    <div class="container-1">
+        <div class="container-1-1">
+            <button type="submit" id="menu_btn">
+                <i class="fas fa-bars" id="menu_icon"></i>
+            </button>
+            <script>
+                document.getElementById("menu_btn").addEventListener("click", function() {
+                    // Redirect to the 'parameter' URL
+                    window.location.href = "/comport/";
+                });
+            </script>
+            <input type="text" id="date_time" >
+            <input type="text" id="operator" >
+            <input type="text" id="shift" >
+            <button type="submit" id="exit_btn">
+                <i class="fas fa-sign-out-alt" id="exit_icon"></i>
+            </button>
+        </div>
+        <div class="container-1-2">
+            <label for="part_model">PART MODEL:</label>
+            <input type="text" id="part_model">
+
+            <label for="part_no" style="margin-left: 1%;">PART NAME:</label>
+            <input type="text" id="part_no" >
+
+            <label for="part_status" style="margin-left: 2%;">PART STATUS:</label>
+            <input type="text" id="accept" >
+            <input type="text" id="rework">
+            <input type="text" id="reject">
+            <input type="text" id="total">
+        </div>
+        <div class="container-1-3">
+            <input type="text" id="notification_bar">
+        </div>
+
+    </div>
+    <div class="container-2">
+        <div class="gauge-container" id="gauge1">
+            <input type="text" id="para_name1" class="input-box" />
+            <div class="input-row-top">
+                <input type="text" id="max" class="input-box1-top"  />
+                <input type="text" id="min" class="input-box1-top"  />
+                <input type="text" id="tir" class="input-box1-top"  />
+            </div>
+            <canvas id="gaugeCanvas1" width="400" height="350"></canvas>
+            <!-- First row: Labels -->
+            <div class="label-row">
+                <label for="max">MAX</label>
+                <label for="min">MIN</label>
+                <label for="tir">TIR</label>
+            </div>
+
+            <!-- Second row: Input boxes -->
+            <div class="input-row">
+                <input type="text" id="max" class="input-box1"  />
+                <input type="text" id="min" class="input-box1"  />
+                <input type="text" id="tir" class="input-box1"  />
+            </div>
+        </div>
+        <div class="gauge-container" id="gauge2">
+            <input type="text" id="para_name2" class="input-box" />
+            <div class="input-row-top">
+                <input type="text" id="max" class="input-box1-top"  />
+                <input type="text" id="min" class="input-box1-top"  />
+                <input type="text" id="tir" class="input-box1-top"  />
+            </div>
+            <canvas id="gaugeCanvas2" width="400" height="350"></canvas>
+            <!-- First row: Labels -->
+            <div class="label-row">
+                <label for="max">MAX</label>
+                <label for="min">MIN</label>
+                <label for="tir">TIR</label>
+            </div>
+
+            <!-- Second row: Input boxes -->
+            <div class="input-row">
+                <input type="text" id="max" class="input-box1"  />
+                <input type="text" id="min" class="input-box1"  />
+                <input type="text" id="tir" class="input-box1"  />
+            </div>
+        </div>
+        <div class="gauge-container" id="gauge3">
+            <input type="text" id="para_name3" class="input-box" />
+            <div class="input-row-top">
+                <input type="text" id="max" class="input-box1-top"  />
+                <input type="text" id="min" class="input-box1-top"  />
+                <input type="text" id="tir" class="input-box1-top"  />
+            </div>
+            <canvas id="gaugeCanvas3" width="400" height="350"></canvas>
+            <!-- First row: Labels -->
+            <div class="label-row">
+                <label for="max">MAX</label>
+                <label for="min">MIN</label>
+                <label for="tir">TIR</label>
+            </div>
+
+            <!-- Second row: Input boxes -->
+            <div class="input-row">
+                <input type="text" id="max" class="input-box1"  />
+                <input type="text" id="min" class="input-box1"  />
+                <input type="text" id="tir" class="input-box1"  />
+            </div>
+        </div>
+        <div class="gauge-container" id="gauge4">
+            <input type="text" id="para_name4" class="input-box" />
+            <div class="input-row-top">
+                <input type="text" id="max" class="input-box1-top"  />
+                <input type="text" id="min" class="input-box1-top"  />
+                <input type="text" id="tir" class="input-box1-top"  />
+            </div>
+            <canvas id="gaugeCanvas4" width="400" height="350"></canvas>
+            <!-- First row: Labels -->
+            <div class="label-row">
+                <label for="max">MAX</label>
+                <label for="min">MIN</label>
+                <label for="tir">TIR</label>
+            </div>
+
+            <!-- Second row: Input boxes -->
+            <div class="input-row">
+                <input type="text" id="max" class="input-box1"/>
+                <input type="text" id="min" class="input-box1"/>
+                <input type="text" id="tir" class="input-box1"/>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container-3">
+        <div class="container-3-1">
+            <label for="punch_no">PUNCH NO:</label>
+            <input type="text" id="punch_no">
+            <button type="submit" id="start_stop_btn">START[F4] <br> STOP[F5]</button>
+        </div>
+        <div class="container-3-2">
+            <button type="submit" class="container-3-2-btn" id="master_btn">MASTERING[F1]</button>
+            <button type="submit" class="container-3-2-btn" id="model_btn" onclick="showNextPartName()">MODEL[F2]</button>
+            <button type="submit" class="container-3-2-btn" id="spc_btn">SPC[F3]</button>
+            <button type="submit" class="container-3-2-btn" id="report_btn">REPORT[F6]</button>
+        </div>
+        </div>
+    
+        <input type="text" id="db_port" value="{{ comport_com_port }}" hidden>
+    <input type="text" id="com_ports" value="{{ ports_string }}" hidden>
+    <input type="text" id="baud_rate" value="{{ comport_baud_rate }}" hidden>
+    <input type="text" id="parity" value="{{ comport_parity }}" hidden>
+    <input type="text" id="stopbit" value="{{ comport_stopbit }}" hidden>
+    <input type="text" id="databit" value="{{ comport_databit }}" hidden>
+    <textarea id="serial-data-display" cols="50" rows="10" readonly hidden></textarea>
+   
+   
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+            const menuButton = document.getElementById("menu_btn");
+            menuButton.addEventListener("click", () => {
+                // Redirect to the 'comport' page
+                window.location.href = "/comport/";
+            });
+        });
+
+// Initialize the list of part names and the current index
+        let receivedValue = "{{ part_model|safe }}";
+        console.log('your part_model is:',receivedValue);
+        let partNames = receivedValue
+            .replace(/[\[\]' ]/g, '') // Remove [, ], ', and spaces
+            .split(','); // Split by comma to get an array
+
+        let currentIndex = 1; // Start with the first part name
+
+        function showNextPartName() {
+            if (partNames.length > 0) {
+                // Update the input box with the current part name
+                document.getElementById('part_model').value = partNames[currentIndex];
+                // Increment the index and loop back to the start if needed
+                currentIndex = (currentIndex + 1) % partNames.length;
+            } else {
+                // Handle no part names case
+                alert("No part names available.");
+            }
+        }
+
+        // Initialize the input box on page load
+        window.onload = function () {
+            if (partNames.length > 0) {
+                document.getElementById('part_model').value = partNames[0];
+            }
+        };
+
+
+
+
+$(document).ready(function () {
+    $("#master_btn").click(function () {
+        const partName = $("#part_model").val(); // Capture the input value
+        $.ajax({
+            url: "{% url 'master' %}", // URL for 'newma' view
+            method: "POST",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            data: { part_model: partName }, // Send the part_model
+            success: function (response) {
+                if (response.redirect_url) {
+                    // Redirect to newma and send part_model as a query parameter
+                    window.location.href = response.redirect_url + "?part_model=" + encodeURIComponent(partName);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+            },
+        });
+    });
+});
+
+
+/////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+
+function drawGauge(canvasId, value = 0) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 150;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear previous drawing
+
+    // Draw the outer circle (3/4 circle)
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0.75 * Math.PI, 2.25 * Math.PI);
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = 'white';
+    ctx.stroke();
+
+    // Draw the color zones
+    drawZone(ctx, centerX, centerY, radius, 0.75 * Math.PI, Math.PI, '#f00'); // Red
+    drawZone(ctx, centerX, centerY, radius, Math.PI, 1.5 * Math.PI, '#ffd700'); // Yellow
+    drawZone(ctx, centerX, centerY, radius, 1.5 * Math.PI, 2.25 * Math.PI, '#0f0'); // Green
+
+    // Draw ticks and numbers
+    drawTicksAndLabels(ctx, centerX, centerY, radius);
+
+    // Draw the needle
+    drawNeedle(ctx, centerX, centerY, radius, value);
+
+    // Draw the reading inside the canvas
+    drawReadingText(ctx, centerX, centerY, value);
+}
+
+function drawZone(ctx, x, y, radius, startAngle, endAngle, color) {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, startAngle, endAngle);
+    ctx.lineWidth = 20;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+}
+
+function drawTicksAndLabels(ctx, x, y, radius) {
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+
+    for (let i = -50; i <= 50; i++) {
+        const angle = 0.75 * Math.PI + ((i + 50) * 1.5 * Math.PI) / 100;
+        const tickLength = i % 10 === 0 ? 20 : i % 5 === 0 ? 15 : 10; // Large, Medium, Small
+        const tickWidth = i % 10 === 0 ? 3 : i % 5 === 0 ? 2 : 1; // Adjust width for visibility
+
+        const innerTickX = x + (radius - tickLength) * Math.cos(angle);
+        const innerTickY = y + (radius - tickLength) * Math.sin(angle);
+        const outerTickX = x + radius * Math.cos(angle);
+        const outerTickY = y + radius * Math.sin(angle);
+
+        // Draw tick
+        ctx.beginPath();
+        ctx.moveTo(outerTickX, outerTickY);
+        ctx.lineTo(innerTickX, innerTickY);
+        ctx.lineWidth = tickWidth;
+        ctx.strokeStyle = '#000';
+        ctx.stroke();
+
+        // Draw label for large ticks
+        if (i % 10 === 0) {
+            const labelX = x + (radius - 40) * Math.cos(angle);
+            const labelY = y + (radius - 40) * Math.sin(angle);
+            ctx.fillText(i, labelX, labelY);
+        }
+    }
+}
+
+function drawNeedle(ctx, x, y, radius, value) {
+    const needleLength = radius - 20; // Needle length
+
+    const angle = 0.75 * Math.PI + ((value + 50) * 1.5 * Math.PI) / 100;
+
+    const tipX = x + needleLength * Math.cos(angle);
+    const tipY = y + needleLength * Math.sin(angle);
+
+    const baseRadius = 25;
+    const baseAngle1 = angle - 0.2;
+    const baseAngle2 = angle + 0.2;
+    const baseX1 = x + baseRadius * Math.cos(baseAngle1);
+    const baseY1 = y + baseRadius * Math.sin(baseAngle1);
+    const baseX2 = x + baseRadius * Math.cos(baseAngle2);
+    const baseY2 = y + baseRadius * Math.sin(baseAngle2);
+
+    const rearX = x - 15 * Math.cos(angle);
+    const rearY = y - 15 * Math.sin(angle);
+
+    ctx.beginPath();
+    ctx.moveTo(tipX, tipY);
+    ctx.lineTo(baseX1, baseY1);
+    ctx.lineTo(rearX, rearY);
+    ctx.lineTo(baseX2, baseY2);
+    ctx.closePath();
+
+    ctx.fillStyle = '#ff4500';
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#333';
+    ctx.stroke();
+
+    // Draw the pivot circle at the center
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, 2 * Math.PI);
+    ctx.fillStyle = '#333';
+    ctx.fill();
+}
+
+function drawReadingText(ctx, x, y, value, marginLeft = 15, borderWidth = 2) {
+    const readingText = `${value.toFixed(4)} MM`;
+
+    ctx.font = '25px Arial';
+    ctx.fillStyle = 'black';
+
+    // Draw a white background for the reading
+    const textWidth = ctx.measureText(readingText).width;
+    const textHeight = 40; // Approximate height of the text
+
+    // White background with a border
+    ctx.fillStyle = 'white';
+    ctx.fillRect(x - textWidth / 2 - 10 - marginLeft, y + 120, textWidth + 40, textHeight); // White background
+
+    // Border around the box
+    ctx.strokeStyle = 'black'; // Border color
+    ctx.lineWidth = borderWidth; // Border thickness
+    ctx.strokeRect(x - textWidth / 2 - 10 - marginLeft, y + 120, textWidth + 40, textHeight); // Border
+
+    // Draw the actual text on top
+    ctx.fillStyle = 'black';
+    ctx.textAlign = 'center'; // Center the text horizontally
+    ctx.textBaseline = 'middle'; // Vertically center the text
+    ctx.fillText(readingText, x - marginLeft, y + 145);
+}
+
+
+
+// Initialize the gauges
+drawGauge('gaugeCanvas1', 17);
+drawGauge('gaugeCanvas2', 30.123);
+drawGauge('gaugeCanvas3', 45.987);
+drawGauge('gaugeCanvas4', 0);
+
+
+
+/////////////////////////////////////////////////////////////
+
+
+function updateClock() {
+    // Get the current date and time
+    var currentDate = new Date();
+    var hours = currentDate.getHours();
+    var minutes = currentDate.getMinutes();
+    var seconds = currentDate.getSeconds();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+
+    // Format the hours, minutes, and seconds
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Handle midnight (0 hours)
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+
+    // Create the time string
+    var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+
+    // Get the date components
+    var day = currentDate.getDate();
+    var month = currentDate.getMonth() + 1; // Month is zero-based
+    var year = currentDate.getFullYear();
+
+    // Create the date string
+    var currentDateFormatted = day + '/' + month + '/' + year;
+
+    // Set the value of the input box
+    document.getElementById("date_time").value = currentDateFormatted + ' ' + currentTime;
+
+    // Call this function again after 1 second
+    setTimeout(updateClock, 1000);
+}
+
+// Call the function to initially display the clock
+updateClock();        
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////
+// start the serial communication after this page is loaded :::
+
+
+// Initialize WebSocket connection
+const socket = new WebSocket('ws://localhost:8000/ws/measurement/');
+
+
+// Function to start serial communication
+function startSerialCommunication() {
+    // Wait until WebSocket is open
+    if (socket.readyState === WebSocket.OPEN) {
+        const dbPort = document.getElementById("db_port").value;
+        const comPorts = document.getElementById("com_ports").value;
+        const baudRate = document.getElementById("baud_rate").value;
+        const parity = document.getElementById("parity").value;
+        const stopbit = document.getElementById("stopbit").value;
+        const databit = document.getElementById("databit").value;
+
+        console.log('Your COM port from front end:', comPorts);
+        console.log('Your DB port from front end:', dbPort);
+        console.log('Your Baud rate from front end:', baudRate);
+        console.log('Your Parity from front end:', parity);
+        console.log('Your Stopbit from front end:', stopbit);
+        console.log('Your Databit from front end:', databit);
+
+        if (dbPort === comPorts) {
+            const comparableValue = dbPort; // If equal, use dbPort
+            console.log("Matching Value:", comparableValue);
+
+            // Send the serial port configuration to the server via WebSocket
+            socket.send(JSON.stringify({
+                command: 'start_serial',
+                com_port: dbPort,
+                baud_rate: baudRate,
+                parity: parity,
+                stopbit: stopbit,
+                databit: databit,
+            }));
+
+        } else {
+            console.log("No Match");
+        }
+    } else {
+        // Retry startSerialCommunication after a short delay if WebSocket is not open
+        setTimeout(startSerialCommunication, 100); // Retry every 100ms until WebSocket is open
+    }
+}
+
+// WebSocket event listeners
+socket.onopen = function(event) {
+    console.log("WebSocket connection established.");
+    startSerialCommunication(); // Call startSerialCommunication when WebSocket is open
+};
+
+socket.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    const message = data.message;
+
+    // Append serial data to the textarea
+    const serialDataDisplay = document.getElementById("serial-data-display");
+    serialDataDisplay.value += message + '\n'; // Add new message to the textarea
+    serialDataDisplay.scrollTop = serialDataDisplay.scrollHeight; // Scroll to the bottom
+
+};
+    </script>
+    
+</body>
+</html>

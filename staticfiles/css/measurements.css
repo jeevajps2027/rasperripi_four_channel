@@ -1,0 +1,445 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box; /* Includes border in the width and height calculations */
+    overflow: hidden; /* Prevents scrolling caused by overflow */
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    z-index: 1000;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    border: 5px solid lightseagreen ;
+}    
+
+.container-1 {
+    height: 20%;
+    width: 100%;
+    border: 1px solid black;
+}
+
+.container-1-1 {
+    height: 30%; /* Allow the container to fill 100% height of its parent */
+    width: 100%;
+    background-color: lightgray;
+    border: 1px solid black;
+    display: flex;
+    padding:2px;
+}
+
+#menu_btn {
+    height: 100%;
+    width: 5%;
+    background-color: aqua;
+    border: none; /* Remove the border */
+}
+
+#menu_icon {
+    font-size: 2vw; /* Increase the icon size */
+    font-weight: bold; /* Make it bold */
+    color: black; /* Set color */
+}
+#exit_btn {
+   margin-left:10% ;
+    background-color: #ff4c4c; /* Example: red background */
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+    width: 5%;
+   
+}
+#exit_btn:hover{
+    background: linear-gradient(45deg,red,rgb(58, 0, 0));
+    transform: translateX(3px);
+}
+
+
+#exit_btn:active{
+    background: linear-gradient(45deg,rgb(58, 0, 0),red);
+    transform: translateX(-3px);
+}
+
+#exit_icon {
+    font-size: 2vw; /* Adjust the icon size */
+    color: white; /* Set the icon color */
+}
+#operator {
+    width: 25%; 
+    height: 100%; 
+    box-sizing: border-box; 
+   margin-left: 1%;
+   font-weight: bold;
+   font-size: 1.5vw;
+   text-align: center;
+   
+}
+#shift{
+    width: 20%; 
+    height: 100%; 
+    box-sizing: border-box; 
+    margin-left: 1%;
+    font-weight: bold;
+   font-size: 1.5vw;
+   text-align: center;
+}
+#date_time{
+    width: 30%; 
+    height: 100%; 
+    box-sizing: border-box; 
+    margin-left: 1%;
+    font-weight: bold;
+   font-size: 2vw;
+   text-align: center;
+}
+.container-1-2 {
+    height: 30%; /* Allow the container to fill 100% height of its parent */
+    width: 100%;
+    background-color: lightgray;
+    border: 1px solid black;
+    display: flex;
+    padding:2px;
+}
+
+.container-1-2 label{
+    font-weight: bold;
+    font-size: 1vw;
+}
+#part_model{
+    width: 25%;
+    font-weight: bold;
+    font-size: 2vw;
+    text-align: center;
+    background-color: rgb(72, 71, 71);
+    color: white;
+}
+#part_no{
+    width: 20%;
+    font-weight: bold;
+    font-size: 2vw;
+    text-align: center;
+    background-color: rgb(72, 71, 71);
+    color: white;
+}
+#accept{
+    width: 5%;
+    margin-left: 1%;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5vw;
+    text-align: center;
+}
+#rework{
+    width: 5%;
+    margin-left: 1%;
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+    font-size: 1.5vw;
+    text-align: center;
+}
+#reject{
+    width: 5%;
+    margin-left: 1%;
+    background-color: red;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5vw;
+    text-align: center;
+}
+#total{
+    width: 5%;
+    margin-left: 1%;
+    background-color: blue;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5vw;
+    text-align: center;
+}
+.container-1-3 {
+    height: 30%; /* Allow the container to fill 100% height of its parent */
+    width: 100%;
+    background-color: white;
+    border: 1px solid black;
+    display: flex;
+    padding:2px;
+}
+#notification_bar{
+    width: 80%;
+    background-color: orange;
+    font-weight: bold;
+    font-size: 1.5vw;
+    color: black;
+    text-align: center;
+}
+#overall_status{
+    width: 15%;
+    margin-left: 2%;
+    font-weight: bold;
+    font-size: 1.5vw;
+    color: black;
+    text-align: center;
+}
+.container-2{
+    height: 60%;
+    width: 100%;
+   display: flex;
+    border: 1px solid black;
+}
+
+.gauge-container {
+    height: 100%;
+    width: 25%;
+    border: 1px solid black;
+    background-color: rgb(149, 183, 246);
+    display: flex;
+    flex-direction: column; /* Stack canvas and input vertically */
+    align-items: center;   /* Center horizontally */
+    position: relative; /* Required for absolute positioning adjustments */
+}
+
+.input-box {
+    width: 100%;  /* Make the input box 100% of the container width */
+    height: 8%;  /* Set the height of the input box to 10% of the container */
+    box-sizing: border-box; /* Ensure padding doesn't increase the overall width/height */
+   text-align: center;
+   font-weight: bold;
+   font-size: 1.5vw;
+}
+
+canvas {
+    width: 95%;  /* Optional: Ensure the canvas takes the full available width */
+   height: 80%;
+    background-color: antiquewhite;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 1%;
+}
+
+.label-row label {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1vw;
+}
+
+.input-row {
+    display: flex;
+    width: 100%;
+    height: 10%;
+}
+
+.input-box1 {
+    width: 30%;
+    height: 65%;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5vw;
+}
+
+.input-row-top {
+    display: flex;
+    width: 100%;
+    height: 7%;
+}
+
+.input-box1-top {
+    width: 30%;
+    height: 50%;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1vw;
+    background-color: rgb(209, 207, 207);
+}
+
+
+.container-3 {
+    height: 20%;
+    width: 100%;
+    border: 1px solid black;
+}
+
+.container-3-1 {
+    height: 50%; /* Allow the container to fill 100% height of its parent */
+    width: 100%;
+    background-color:rgb(187, 242, 187);
+    border: 1px solid black;
+    display: flex;
+    padding:2px;
+}
+.container-3-1 label{
+    font-weight: bold;
+    font-size: 1.5vw;
+}
+#punch_no{
+    height: 95%;
+    width: 70%;
+    font-weight: bold;
+    font-size: 2.5vw;
+   background-color:yellow;
+    color: black;
+}
+.container-3-2 {
+    height: 50%; 
+    width: 100%;
+    background-color: lightgray;
+    border: 1px solid black;
+    display: flex;
+    padding:2px;
+}
+
+
+.toggle-btn{
+    height: 100%;
+    width: 10%;
+    margin-left:5%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5vw;
+    color: white;
+    font-family:'Courier New', Courier, monospace;
+    background-color: rgb(77, 28, 124);
+    border: 2px solid black;
+}
+.container-3-2-btn{
+    width: 15%;
+    height: 80%;
+    margin-left: 5%;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5vw;
+    color: white;
+    border: 2px solid black;
+    font-family:'Courier New', Courier, monospace;
+    background-color: orangered;
+   
+}
+
+
+.probe-container {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Add space between the elements */
+}
+
+.notify {
+    height: 10%;
+    width: 40%;
+    position: fixed;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    font-size: 2vw;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.center-notification {
+    display: none; /* Initially hidden */
+    position: fixed;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-weight: bold;
+    justify-content: center;
+    top: 45%;
+    left: 45%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    height: 250px;
+    width: 400px;
+    background-color: lightblue; /* Optional: To make it more visible */
+    padding: 20px; /* Optional: For some padding */
+    border: 2px solid black; /* Optional: For some border */
+    border-radius: 8px; /* Optional: For rounded corners */
+}
+
+#overwrite_ok_button{
+    height: 40px;
+    width: 100px;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+
+}
+
+#overwrite_cancel_button{
+    height: 40px;
+    width: 100px;
+    background-color: red;
+    color: white;
+    font-weight: bold;
+
+}
+
+#punch_login{
+    height: 40px;
+    width: 100px;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+
+}
+
+#punch_overwrite_credentials{
+    margin-top: 2%; 
+    display: none;
+}
+
+.userpassinput{
+    margin-top: 5%;
+    width: 30%;
+    margin-left: 5%;
+    text-align: center;
+    font-weight: bold;
+}
+.userpassinput1{
+    margin-top: 5%;
+    width: 30%;
+    margin-left: 10%;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+
+#loading_spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 5vw;
+    color: rgb(1, 77, 1);
+    z-index: 9999; /* Ensure spinner appears on top */
+}
+
+.fa-spinner {
+    margin-top: 10%;
+    margin-right: 20%; /* Add space between spinner and text */
+}
