@@ -221,116 +221,116 @@ document.getElementById('close_btn').addEventListener('click', () => {
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// Function to add a new row dynamically
-function addNewRow(rowNumber) {
-    const tableBody = document.getElementById("tableBody-1");
+// // Function to add a new row dynamically
+// function addNewRow(rowNumber) {
+//     const tableBody = document.getElementById("tableBody-1");
 
-    const columnNames = [
-        "SR_NO", "PARAMETER_NAME", "CHANNEL_NO", "LOW_MASTER", "HIGH_MASTER", 
-        "NOMINAL", "LSL", "USL", "LTL", "UTL","MASTER_GRP", "STEP_NO", "AUTO_MAN", "TIMER", "DIGITS", "ID_OD"
-    ];
+//     const columnNames = [
+//         "SR_NO", "PARAMETER_NAME", "CHANNEL_NO", "LOW_MASTER", "HIGH_MASTER", 
+//         "NOMINAL", "LSL", "USL", "LTL", "UTL","MASTER_GRP", "STEP_NO", "AUTO_MAN", "TIMER", "DIGITS", "ID_OD"
+//     ];
 
-    const cycleOptions = {
-        "CHANNEL_NO": [1, 2, 3, 4],
-        "MASTER_GRP": [1, 2, 3, 4],
-        "STEP_NO": [1, 2, 3, 4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
-        "DIGITS": [1, 2, 3, 4],
-        "ID_OD": ["ID", "OD"]
-    };
+//     const cycleOptions = {
+//         "CHANNEL_NO": [1, 2, 3, 4],
+//         "MASTER_GRP": [1, 2, 3, 4],
+//         "STEP_NO": [1, 2, 3, 4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],
+//         "DIGITS": [1, 2, 3, 4],
+//         "ID_OD": ["ID", "OD"]
+//     };
 
-    const numericColumns = [
-        "LOW_MASTER", "HIGH_MASTER", "NOMINAL", "LSL", "USL", "LTL", "UTL", "TIMER"
-    ];
+//     const numericColumns = [
+//         "LOW_MASTER", "HIGH_MASTER", "NOMINAL", "LSL", "USL", "LTL", "UTL", "TIMER"
+//     ];
 
-    const row = document.createElement("tr");
-    row.id = `row-${rowNumber}`;
+//     const row = document.createElement("tr");
+//     row.id = `row-${rowNumber}`;
 
-    columnNames.forEach((colName, index) => {
-        const cell = document.createElement("td");
+//     columnNames.forEach((colName, index) => {
+//         const cell = document.createElement("td");
 
-        if (index === 0) {
-            cell.textContent = rowNumber;
-            cell.style.backgroundColor = "white";
-        } else if (index === 12) {
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.style.cursor = "pointer";
-            cell.appendChild(checkbox);
-            checkbox.addEventListener("change", (event) => {
-                const timerInput = document.querySelector(`#row-${rowNumber}-TIMER`);
-                if (event.target.checked) {
-                    timerInput.disabled = false;
-                } else {
-                    timerInput.disabled = true;
-                    timerInput.value = '';
-                }
-            });
-        } else if (index === 13) {
-            const timerInput = document.createElement("input");
-            timerInput.type = "text";
-            timerInput.id = `row-${rowNumber}-TIMER`;
-            timerInput.disabled = true;
-            timerInput.addEventListener("input", () => {
-                timerInput.value = timerInput.value.replace(/[^0-9.]/g, '');
-                if ((timerInput.value.match(/\./g) || []).length > 1) {
-                    timerInput.value = timerInput.value.slice(0, -1);
-                }
-            });
-            cell.appendChild(timerInput);
-        }  else if (cycleOptions[colName]) {
-            // Columns that require cycling through values
-            const button = document.createElement("button");
-            button.textContent = cycleOptions[colName][0];
-            button.style.cursor = "pointer";
-            button.style.backgroundColor = "#f4f1de";
-            button.style.color = "black";
-            button.style.fontWeight = "bold";
-            button.style.height = "80%";
-            button.style.width = "80%";
-            button.style.fontSize = "22px";
-            button.style.padding = "5px 10px";
-            button.style.border = "2px solid black";
-            button.style.borderRadius = "10px";
-            button.style.boxSizing = "border-box";
-            button.style.textAlign = "center";
+//         if (index === 0) {
+//             cell.textContent = rowNumber;
+//             cell.style.backgroundColor = "white";
+//         } else if (index === 12) {
+//             const checkbox = document.createElement("input");
+//             checkbox.type = "checkbox";
+//             checkbox.style.cursor = "pointer";
+//             cell.appendChild(checkbox);
+//             checkbox.addEventListener("change", (event) => {
+//                 const timerInput = document.querySelector(`#row-${rowNumber}-TIMER`);
+//                 if (event.target.checked) {
+//                     timerInput.disabled = false;
+//                 } else {
+//                     timerInput.disabled = true;
+//                     timerInput.value = '';
+//                 }
+//             });
+//         } else if (index === 13) {
+//             const timerInput = document.createElement("input");
+//             timerInput.type = "text";
+//             timerInput.id = `row-${rowNumber}-TIMER`;
+//             timerInput.disabled = true;
+//             timerInput.addEventListener("input", () => {
+//                 timerInput.value = timerInput.value.replace(/[^0-9.]/g, '');
+//                 if ((timerInput.value.match(/\./g) || []).length > 1) {
+//                     timerInput.value = timerInput.value.slice(0, -1);
+//                 }
+//             });
+//             cell.appendChild(timerInput);
+//         }  else if (cycleOptions[colName]) {
+//             // Columns that require cycling through values
+//             const button = document.createElement("button");
+//             button.textContent = cycleOptions[colName][0];
+//             button.style.cursor = "pointer";
+//             button.style.backgroundColor = "#f4f1de";
+//             button.style.color = "black";
+//             button.style.fontWeight = "bold";
+//             button.style.height = "80%";
+//             button.style.width = "80%";
+//             button.style.fontSize = "22px";
+//             button.style.padding = "5px 10px";
+//             button.style.border = "2px solid black";
+//             button.style.borderRadius = "10px";
+//             button.style.boxSizing = "border-box";
+//             button.style.textAlign = "center";
 
-            // Hover effect
-            button.addEventListener("mouseenter", () => {
-                button.style.backgroundColor = "#e0dcc5";
-            });
-            button.addEventListener("mouseleave", () => {
-                button.style.backgroundColor = "#f4f1de";
-            });
+//             // Hover effect
+//             button.addEventListener("mouseenter", () => {
+//                 button.style.backgroundColor = "#e0dcc5";
+//             });
+//             button.addEventListener("mouseleave", () => {
+//                 button.style.backgroundColor = "#f4f1de";
+//             });
 
-            // Click event to cycle through values
-            button.dataset.index = 0;
-            button.addEventListener("click", () => {
-                let currentIndex = parseInt(button.dataset.index, 10);
-                currentIndex = (currentIndex + 1) % cycleOptions[colName].length;
-                button.textContent = cycleOptions[colName][currentIndex];
-                button.dataset.index = currentIndex;
-            });
+//             // Click event to cycle through values
+//             button.dataset.index = 0;
+//             button.addEventListener("click", () => {
+//                 let currentIndex = parseInt(button.dataset.index, 10);
+//                 currentIndex = (currentIndex + 1) % cycleOptions[colName].length;
+//                 button.textContent = cycleOptions[colName][currentIndex];
+//                 button.dataset.index = currentIndex;
+//             });
 
-            cell.appendChild(button);
-        } else {
-            const input = document.createElement("input");
-            input.type = "text";
-            if (numericColumns.includes(colName)) {
-                input.addEventListener("input", () => {
-                    input.value = input.value.replace(/[^0-9.]/g, '');
-                    if ((input.value.match(/\./g) || []).length > 1) {
-                        input.value = input.value.slice(0, -1);
-                    }
-                });
-            }
-            cell.appendChild(input);
-        }
+//             cell.appendChild(button);
+//         } else {
+//             const input = document.createElement("input");
+//             input.type = "text";
+//             if (numericColumns.includes(colName)) {
+//                 input.addEventListener("input", () => {
+//                     input.value = input.value.replace(/[^0-9.]/g, '');
+//                     if ((input.value.match(/\./g) || []).length > 1) {
+//                         input.value = input.value.slice(0, -1);
+//                     }
+//                 });
+//             }
+//             cell.appendChild(input);
+//         }
 
-        row.appendChild(cell);
-    });
+//         row.appendChild(cell);
+//     });
 
-    tableBody.appendChild(row);
-}
+//     tableBody.appendChild(row);
+// }
 
 
 
@@ -374,12 +374,10 @@ document.getElementById('addnew_btn').addEventListener('click', resetFormAndTabl
 // Adding event listener to the 'part_model' field to trigger resetFormAndTable when it's changed
 document.getElementById('part_model').addEventListener('click', resetFormAndTable);
 ///////////////////////////////////////////////////////////////////////////////////////////
-
 $(document).ready(function () {
     const csrftoken = $("meta[name='csrf-token']").attr("content");
 
     $("#save_btn").on("click", function () {
-        console.log("jjjjjjjjjjjjjjjjjjjjjjjjj")
         const partModel = $("#part_model").val();
         if (!partModel) {
             alert("Part Model is required.");
@@ -402,26 +400,20 @@ $(document).ready(function () {
 
         $("#tableBody-1 tr").each(function (rowIndex) {
             const row = {};
-            let emptyFields = []; // Track empty fields in the row
-            let usl = null;
-            let lsl = null;
-            let utl = null;
-            let ltl = null;
-
-            const stepNo = $(this).find("td").eq(10).text(); // Assuming STEP_NO is in the 11th column
-            if (!stepGroups[stepNo]) stepGroups[stepNo] = [];
+            let stepNo = null;
+            let hasParameter = false;
+            let usl = null, lsl = null, utl = null, ltl = null;
 
             $(this).find("td").each(function (index, td) {
                 const colName = [
-                    "SR_NO", "PARAMETER_NAME", "CHANNEL_NO", "LOW_MASTER", "HIGH_MASTER", 
-                    "NOMINAL", "LSL", "USL", "LTL", "UTL","MASTER_GRP", "STEP_NO", "AUTO_MAN", "TIMER", "DIGITS", "ID_OD"
+                    "SR_NO", "PARAMETER_NAME", "CHANNEL_NO", "LOW_MASTER", "HIGH_MASTER",
+                    "NOMINAL", "LSL", "USL", "LTL", "UTL", "MASTER_GRP", "STEP_NO", "AUTO_MAN", "TIMER", "DIGITS", "ID_OD"
                 ][index];
 
                 const input = $(td).find("input");
                 const checkbox = $(td).find("input[type='checkbox']");
                 const button = $(td).find("button");
 
-                // Handle input and other field types
                 if (colName === "AUTO_MAN") {
                     row[colName] = checkbox.is(":checked") ? "on" : "off";
                 } else if (colName === "TIMER") {
@@ -434,19 +426,26 @@ $(document).ready(function () {
                     row[colName] = $(td).text().trim();
                 }
 
-                // Validate non-optional fields (excluding AUTO_MAN and TIMER)
-                if (!row[colName] && colName !== "AUTO_MAN" && colName !== "TIMER") {
-                    emptyFields.push(colName);
+                if (colName === "STEP_NO") {
+                    stepNo = row[colName];
+                }
+                if (colName === "PARAMETER_NAME" && row[colName]) {
+                    hasParameter = true;
                 }
 
-                // Convert numeric columns to numbers for validation
                 if (colName === "LSL") lsl = parseFloat(row[colName]);
                 if (colName === "USL") usl = parseFloat(row[colName]);
                 if (colName === "LTL") ltl = parseFloat(row[colName]);
                 if (colName === "UTL") utl = parseFloat(row[colName]);
             });
 
-            // Add row to step group
+            // Skip validation for rows without a PARAMETER_NAME
+            if (!hasParameter) {
+                return true; // Equivalent to 'continue' in jQuery each()
+            }
+
+            if (!stepGroups[stepNo]) stepGroups[stepNo] = [];
+
             stepGroups[stepNo].push({
                 rowIndex: rowIndex + 1, // 1-based index for user-friendly messages
                 autoMan: row["AUTO_MAN"],
@@ -467,56 +466,51 @@ $(document).ready(function () {
                 $(this).removeClass("error-row");
             }
 
-
             tableData.push(row);
         });
 
-        // // Validate AUTO_MAN and TIMER for each STEP_NO
-        // for (let stepNo in stepGroups) {
-        //     const rowsInStep = stepGroups[stepNo];
-        //     let autoManChecked = null;
-        //     let timerValue = null;
+        // Validate AUTO_MAN and TIMER for each STEP_NO only if PARAMETER_NAME is present
+        for (let stepNo in stepGroups) {
+            const rowsInStep = stepGroups[stepNo];
+            let anyChecked = false;
+            let allChecked = true;
+            let timerValue = null;
 
-        //     for (const row of rowsInStep) {
-        //         // Ensure AUTO_MAN is consistent within the step
-        //         if (autoManChecked === null) {
-        //             autoManChecked = row.autoMan === "on";
-        //         } else if (autoManChecked !== (row.autoMan === "on")) {
-        //             validationFailed = true;
-        //             validationMessage += `Step ${stepNo}: AUTO_MAN must be consistent (all checked or unchecked).\n`;
-        //             break;
-        //         }
+            for (const row of rowsInStep) {
+                if (row.autoMan === "on") {
+                    anyChecked = true;
+                } else {
+                    allChecked = false;
+                }
 
-        //         // Validate TIMER if AUTO_MAN is checked
-        //         if (autoManChecked) {
-        //             if (!row.timer) {
-        //                 validationFailed = true;
-        //                 validationMessage += `Step ${stepNo}, Row ${row.rowIndex}: TIMER cannot be empty when AUTO_MAN is checked.\n`;
-        //                 break;
-        //             }
+                if (row.autoMan === "on") {
+                    if (timerValue === null) {
+                        timerValue = row.timer;
+                    } else if (row.timer !== timerValue) {
+                        validationFailed = true;
+                        validationMessage += `Step ${stepNo}: TIMER must be the same for all rows with AUTO_MAN checked.\n`;
+                        break;
+                    }
+                }
+            }
 
-        //             if (timerValue === null) {
-        //                 timerValue = row.timer;
-        //             } else if (row.timer !== timerValue) {
-        //                 validationFailed = true;
-        //                 validationMessage += `Step ${stepNo}: TIMER must be the same for all rows with AUTO_MAN checked.\n`;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
+            if (anyChecked && !allChecked) {
+                validationFailed = true;
+                validationMessage += `Step ${stepNo}: If any row has AUTO_MAN checked, all rows in the same STEP_NO must be checked.\n`;
+            }
+        }
 
-        // if (validationFailed) {
-        //     alert(`Validation Error:\n${validationMessage}`);
-        //     return; // Stop submission if validation fails
-        // }
+        if (validationFailed) {
+            alert(`Validation Error:\n${validationMessage}`);
+            return;
+        }
 
         const postData = {
             part_model: partModel,
             parameter_settings: parameterSettings,
             table_data: tableData
         };
-        console.log("postData",postData)
+        console.log("postData", postData);
 
         $.ajax({
             url: "/parameter/",
@@ -524,7 +518,7 @@ $(document).ready(function () {
             data: JSON.stringify(postData),
             contentType: "application/json",
             headers: {
-                "X-CSRFToken": csrftoken // Include CSRF token
+                "X-CSRFToken": csrftoken
             },
             success: function (response) {
                 showNotification('Data saved successfully', true);
@@ -591,20 +585,20 @@ function sendPartModelToBackend(partModel) {
                 
                 if (!data) {
                     console.error("No data received from the backend.");
-                    return;
+                    allRowsData = [];
+                } else {
+                    // Assign values correctly
+                    $('#part_model').val(data.part_model);
+                    $('#part_name').val(data.part_name);
+                    $('#char_lock').val(data.char_lock);
+                    $('#char_lock_limit').val(data.char_lock_limit);
+                    $('#punch_no').prop('checked', data.punch_no);
+
+                    allRowsData = data.table_data; // Store table rows
+
+                    // Sort the rows by sr_no in ascending order
+                    allRowsData.sort((a, b) => a.sr_no - b.sr_no);
                 }
-
-                // Assign values correctly
-                $('#part_model').val(data.part_model);
-                $('#part_name').val(data.part_name);
-                $('#char_lock').val(data.char_lock);
-                $('#char_lock_limit').val(data.char_lock_limit);
-                $('#punch_no').prop('checked', data.punch_no);
-
-                allRowsData = data.table_data; // Store table rows
-
-                // Sort the rows by sr_no in ascending order
-                allRowsData.sort((a, b) => a.sr_no - b.sr_no);
 
                 // Ensure exactly 21 rows exist, filling with placeholders if needed
                 while (allRowsData.length < totalRows) {
@@ -636,8 +630,33 @@ function sendPartModelToBackend(partModel) {
                 console.error('Error:', error);
             }
         });
+    } else {
+        console.log("No part model provided. Displaying empty rows.");
+        allRowsData = [];
+        while (allRowsData.length < totalRows) {
+            allRowsData.push({
+                sr_no: allRowsData.length + 1,
+                parameter_name: '',
+                channel_no: '1',
+                low_master: '',
+                high_master: '',
+                nominal: '',
+                lsl: '',
+                usl: '',
+                ltl: '',
+                utl: '',
+                master_grp: '1',
+                step_no: '1',
+                auto_man: false,
+                timer: '',
+                digits: '1',
+                id_od: 'ID'
+            });
+        }
+        renderTableRows(currentPage);
     }
 }
+
 
 // Function to render table rows for the current page
 function renderTableRows(page) {
@@ -676,7 +695,6 @@ function renderTableRows(page) {
     updatePaginationButtons();
 }
 
-// Function to set up event handlers for dynamic elements
 function setupEventHandlers() {
     $('.number-only').on('input', function () {
         this.value = this.value.replace(/[^0-9.]/g, '');
@@ -687,8 +705,8 @@ function setupEventHandlers() {
         const cycleOptions = {
             "channel_no": ["1", "2", "3", "4"],
             "master_grp": ["1", "2", "3", "4"],
-            "step_no": ["1", "2", "3", "4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21"],
-            "digits":  ["1", "2", "3", "4"],
+            "step_no": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21"],
+            "digits": ["1", "2", "3", "4"],
             "id_od": ["ID", "OD"]
         };
 
@@ -697,7 +715,18 @@ function setupEventHandlers() {
         $(this).text(cycleOptions[column][newIndex]);
     });
 
-    // Apply the button style
+    // Enable/Disable Timer input when checkbox is checked/unchecked
+    $('.auto-man-checkbox').on('change', function () {
+        let timerInput = $(this).closest('tr').find('.timer-input');
+        if ($(this).is(':checked')) {
+            timerInput.prop('disabled', false);
+        } else {
+            timerInput.prop('disabled', true);
+            timerInput.val(''); // Optionally clear the input when disabled
+        }
+    });
+
+    // Apply styles to cycle buttons
     $('.cycle-button').each(function () {
         $(this).css({
             'cursor': 'pointer',
@@ -722,6 +751,7 @@ function setupEventHandlers() {
         });
     });
 }
+
 
 // Function to update pagination buttons
 function updatePaginationButtons() {

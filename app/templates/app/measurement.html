@@ -901,15 +901,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             clearInterval(updateInterval);
 
-            // Extract indices before calling updateTableValues
+            // Extract indices for the current step
             let indices = responseData.stepNoArray
                 .map((step, index) => parseInt(step) === currentStep ? index : -1)
                 .filter(index => index !== -1);
-                let container = indices.length;
+
+            let container = indices.length;
+
+            // Extract corresponding parameter names
+            let parameterNames = indices.map(index => responseData.parameterNameArray[index]);
 
             console.log("Indices being passed to updateTableValues:", indices);
-            console.log("container being passed to updateTableValues:", container);
-            updateTableValues(currentStep, indices,container);  // Pass indices
+            console.log("Container being passed to updateTableValues:", container);
+            console.log("Parameter names being passed to updateTableValues:", parameterNames);
+
+            updateTableValues(currentStep, indices, parameterNames,container);
+
+
 
 
               // ✅ **Clear max, min, and tir fields when Stop is clicked**
@@ -1165,71 +1173,75 @@ function updateMaxMinTir(gaugeIndex) {
 }
 
 
+function updateTableValues(step, indices, parameterNames, container) {
+    console.log("Step:", step, "Indices:", indices, "Parameter Names:", parameterNames);
 
+    if (!Array.isArray(parameterNames) || parameterNames.length === 0) {
+        console.error("parameterNames array is empty or not an array:", parameterNames);
+        return;
+    }
 
-
-function updateTableValues(step, indices, container) {
-    console.log("Step:", step, "Indices:", indices);
-
-    indices.forEach(index => {
+    indices.forEach((index, paramIndex) => {
         let rowIndex = index + 1; // Convert 0-based index to 1-based row number
         console.log("Updating rowIndex:", rowIndex);
 
-        // Get input fields for the corresponding row
         let paramInput = document.getElementById(`param_${rowIndex}`);
         let curInput = document.getElementById(`cur_${rowIndex}`);
         let maxInput = document.getElementById(`max_${rowIndex}`);
         let minInput = document.getElementById(`min_${rowIndex}`);
         let tirInput = document.getElementById(`tir_${rowIndex}`);
 
-        // Get source values for updating the row
-        let outputBox = document.getElementById(`Output_box${container}`);
-        let parameterBox = document.getElementById(`para_name${container}`);
-        let maxBox = document.getElementById(`max${container}`);
-        let minBox = document.getElementById(`min${container}`);
-        let tirBox = document.getElementById(`tir${container}`);
+        if (!paramInput) {
+            console.warn(`paramInput for Row ${rowIndex} not found.`);
+            return;
+        }
 
-        // Log values before updating
-        console.log(`Values for Row ${rowIndex}:`, {
-            parameterBox: parameterBox ? parameterBox.value : null,
+        let paramName = parameterNames[paramIndex] !== undefined ? parameterNames[paramIndex] : "UNKNOWN";
+        console.log(`Assigning parameter name for Row ${rowIndex}: ${paramName}`);
+        paramInput.value = paramName;
+
+        // Check if indices contain only one element
+        let targetIndex = indices.length === 1 ? container : rowIndex;
+
+        let outputBox = document.getElementById(`Output_box${targetIndex}`);
+        let maxBox = document.getElementById(`max${targetIndex}`);
+        let minBox = document.getElementById(`min${targetIndex}`);
+        let tirBox = document.getElementById(`tir${targetIndex}`);
+
+        console.log(`Values for Row ${targetIndex}:`, {
+            paramName,
             outputBox: outputBox ? outputBox.value : null,
             maxBox: maxBox ? maxBox.value : null,
             minBox: minBox ? minBox.value : null,
             tirBox: tirBox ? tirBox.value : null
         });
 
-        // Update only if elements exist
-        if (paramInput && curInput && maxInput && minInput && tirInput &&
-            outputBox && parameterBox && maxBox && minBox && tirBox) {
-            
-            paramInput.value = parameterBox.value;
+        if (curInput && maxInput && minInput && tirInput && outputBox && maxBox && minBox && tirBox) {
             curInput.value = outputBox.value;
             maxInput.value = maxBox.value;
             minInput.value = minBox.value;
             tirInput.value = tirBox.value;
 
-            console.log(`Updated Row ${rowIndex}`);
+            console.log(`Updated Row ${targetIndex} with parameter ${paramName}`);
 
-            // Remove any existing event listeners to prevent affecting previous rows
-            outputBox.replaceWith(outputBox.cloneNode(true));
-            outputBox = document.getElementById(`Output_box${container}`); // Get the new element reference
-
-            // Add event listener to detect background color change
+            // Ensure the event listener is applied properly
             outputBox.addEventListener("input", function () {
-                let bgColor = window.getComputedStyle(outputBox).backgroundColor;
-                console.log(`Detected Background Color for Row ${rowIndex}: ${bgColor}`);
+                let existingBgColor = curInput.style.backgroundColor; // Store the existing background color
+                let computedBgColor = window.getComputedStyle(outputBox).backgroundColor;
 
-                // Update only the corresponding row's curInput color
-                let targetCurInput = document.getElementById(`cur_${rowIndex}`);
-                if (targetCurInput) {
-                    targetCurInput.style.backgroundColor = bgColor;
+                console.log(`Existing Background Color for Row ${targetIndex}: ${existingBgColor}`);
+                console.log(`Computed Background Color for Row ${targetIndex}: ${computedBgColor}`);
+
+                // Only update background color if it was not previously set by another source
+                if (!existingBgColor || existingBgColor === "rgba(0, 0, 0, 0)" || existingBgColor === "transparent") {
+                    curInput.style.backgroundColor = computedBgColor;
                 }
             });
 
-            // Trigger event listener immediately to apply color on load
+            // Trigger event listener immediately to apply color on load if necessary
             outputBox.dispatchEvent(new Event("input"));
         } else {
-            console.warn(`Row ${rowIndex} elements not found.`);
+            console.warn(`Some elements missing for Row ${targetIndex}`);
         }
     });
 }

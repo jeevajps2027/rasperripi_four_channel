@@ -247,9 +247,6 @@ console.log("Raw parameterNamesString:", parameterNamesString);
 const parameterNames = parameterNamesString.match(/'([^']+)'/g).map(name => name.replace(/'/g, '').trim());
 console.log("parameterNames Array:", parameterNames);
 
-// Add 'ALL' as the first value in the array
-parameterNames.unshift('ALL');
-console.log("parameterNames Array after adding 'ALL':", parameterNames);
 
 let currentIndex = 0; // Initialize index
 console.log("Initial currentIndex:", currentIndex);
