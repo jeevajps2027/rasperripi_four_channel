@@ -113,68 +113,157 @@
 
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const inputBox = document.getElementById("part_model");
 
-    // Create number pad dynamically
+document.addEventListener("DOMContentLoaded", function () {
+    const tableBody = document.getElementById("tableBody-1");
+    const inputFields = ["part_model", "part_name", "char_lock", "char_lock_limit"];
+
     const numberPad = document.createElement("div");
     numberPad.id = "numberPad";
     numberPad.className = "num-pad";
     numberPad.style.display = "none";
 
-    // Number buttons (1-9)
-    for (let i = 1; i <= 9; i++) {
-        createButton(i, numberPad);
-        if (i % 3 === 0) numberPad.appendChild(document.createElement("br"));
-    }
+    const toggleButton = document.createElement("button");
+    toggleButton.textContent = "ALP";
+    toggleButton.className = "num-btn";
+    toggleButton.onclick = toggleMode;
+    numberPad.appendChild(toggleButton);
+    numberPad.appendChild(document.createElement("br"));
 
-    // Special buttons
-    createButton("C", numberPad, clearNumber);
-    createButton(0, numberPad);
-    createButton(".", numberPad, enterDot);
-    createButton("OK", numberPad, hideNumberPad);
+    let isAlphabetMode = false;
+    let alphabetKeys = {
+        "abc": ["A", "B", "C"],
+        "def": ["D", "E", "F"],
+        "ghi": ["G", "H", "I"],
+        "jkl": ["J", "K", "L"],
+        "mno": ["M", "N", "O"],
+        "pqrs": ["P", "Q", "R", "S"],
+        "tuv": ["T", "U", "V"],
+        "wxyz": ["W", "X", "Y", "Z"]
+    };
+    let keyPressCount = {};
+    let lastKeyPressed = null;
+    let keyPressTimeout = null;
+    let activeInput = null;
 
-    // Append number pad to body
+    let buttons = [];
+    createNumberPad();
     document.body.appendChild(numberPad);
 
-    // Show number pad when input is clicked
-    inputBox.addEventListener("click", function () {
-        numberPad.style.display = "block";
-        positionNumberPad(inputBox, numberPad);
+    // Apply keypad to dynamically added table input fields
+    tableBody.addEventListener("focusin", function (event) {
+        if (event.target.tagName === "INPUT" && event.target.type === "text") {
+            activateKeypad(event.target);
+        }
     });
 
-    // Function to create buttons
-    function createButton(value, parent, callback) {
-        const button = document.createElement("button");
-        button.textContent = value;
-        button.className = "num-btn";
-        button.onclick = callback ? callback : function () { enterNumber(value); };
-        parent.appendChild(button);
+    // Apply keypad to specific input fields outside the table
+    inputFields.forEach((id) => {
+        const field = document.getElementById(id);
+        if (field) {
+            field.addEventListener("focus", function () {
+                activateKeypad(field);
+            });
+        }
+    });
+
+    function activateKeypad(inputElement) {
+        activeInput = inputElement;
+        numberPad.style.display = "block";
+        positionNumberPad(activeInput, numberPad);
     }
 
-    // Function to enter numbers in input field
-    function enterNumber(num) {
-        inputBox.value += num;
-    }
+    function toggleMode() {
+        isAlphabetMode = !isAlphabetMode;
+        toggleButton.textContent = isAlphabetMode ? "NUM" : "ALP";
+        keyPressCount = {};
+        lastKeyPressed = null;
+        numberPad.innerHTML = "";
+        numberPad.appendChild(toggleButton);
+        numberPad.appendChild(document.createElement("br"));
 
-    // Function to enter a decimal point (.)
-    function enterDot() {
-        if (!inputBox.value.includes(".")) {
-            inputBox.value += ".";
+        if (isAlphabetMode) {
+            createAlphabetPad();
+        } else {
+            createNumberPad();
         }
     }
 
-    // Function to clear input field
-    function clearNumber() {
-        inputBox.value = "";
+    function createNumberPad() {
+        buttons = [];
+        for (let i = 1; i <= 9; i++) {
+            buttons.push(createButton(i));
+            if (i % 3 === 0) numberPad.appendChild(document.createElement("br"));
+        }
+        buttons.push(createButton("_"));  // ✅ Add underscore button
+        buttons.push(createButton(0));
+        buttons.push(createButton("."));
+        numberPad.appendChild(document.createElement("br"));
+        buttons.push(createButton("C", clearLastCharacter));
+        buttons.push(createButton("OK", hideNumberPad));
     }
 
-    // Function to hide number pad
+    function createAlphabetPad() {
+        buttons = [];
+        for (let key in alphabetKeys) {
+            buttons.push(createButton(key, function () { handleAlphabetClick(key); }));
+            if (buttons.length % 3 === 0) numberPad.appendChild(document.createElement("br"));
+        }
+        numberPad.appendChild(document.createElement("br"));
+        buttons.push(createButton("TAB", addSpace));  // ✅ Add space button
+        buttons.push(createButton("C", clearLastCharacter));
+        buttons.push(createButton("OK", hideNumberPad));
+    }
+
+    function createButton(value, callback) {
+        const button = document.createElement("button");
+        button.textContent = value;
+        button.className = "num-btn";
+        button.onclick = callback ? callback : function () { handleButtonClick(value); };
+        numberPad.appendChild(button);
+        return button;
+    }
+
+    function handleButtonClick(value) {
+        if (activeInput) {
+            activeInput.value += value;
+        }
+    }
+
+    function handleAlphabetClick(key) {
+        if (!alphabetKeys[key] || !activeInput) return;
+
+        if (lastKeyPressed !== key) {
+            activeInput.value += alphabetKeys[key][0];
+            keyPressCount[key] = 0;
+        } else {
+            keyPressCount[key] = (keyPressCount[key] + 1) % alphabetKeys[key].length;
+            activeInput.value = activeInput.value.slice(0, -1) + alphabetKeys[key][keyPressCount[key]];
+        }
+
+        lastKeyPressed = key;
+        clearTimeout(keyPressTimeout);
+        keyPressTimeout = setTimeout(() => {
+            lastKeyPressed = null;
+        }, 1000);
+    }
+
+    function addSpace() {
+        if (activeInput) {
+            activeInput.value += " ";
+        }
+    }
+
+    function clearLastCharacter() {
+        if (activeInput && activeInput.value.length > 0) {
+            activeInput.value = activeInput.value.slice(0, -1);
+        }
+    }
+
     function hideNumberPad() {
         numberPad.style.display = "none";
     }
 
-    // Position the number pad
     function positionNumberPad(input, pad) {
         const rect = input.getBoundingClientRect();
         pad.style.position = "absolute";

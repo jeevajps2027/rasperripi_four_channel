@@ -329,24 +329,24 @@ function showRadioButtons() {
 // Function to log the selected value from the dropdown
 // Function to log the selected value from the dropdown
 function logSelectedValue() {
-        var masteringSelect = document.querySelector(".mastering_no");
-        console.log("Selected value: " + masteringSelect.value);
-        return masteringSelect.value;  // Return the selected value
-    }
+    var masteringSelect = document.getElementById("mastering"); // Ensure correct element
+    console.log("Selected value: " + masteringSelect.value);
+    return masteringSelect.value;
+}
 
-    // Log the value when the page loads after 2 seconds
-    window.onload = function() {
-            const selectedValue = logSelectedValue();  // Get the selected value
-            fetchAndDisplayValues(selectedValue);  // Pass it to the fetch function
-    };
-
-    // Add an event listener to log any changes when the user selects a new option
-    document.getElementById("mastering").addEventListener("change", function() {
+// Delay execution for 2 seconds after page load
+window.onload = function() {
+    setTimeout(() => {
         const selectedValue = logSelectedValue();
-        fetchAndDisplayValues(selectedValue);  // Update the values based on the new selection
-    });
+        fetchAndDisplayValues(selectedValue);
+    },500);
+};
 
-    // Function to fetch and display values
+// Listen for changes in the dropdown and fetch new values
+document.getElementById("mastering").addEventListener("change", function() {
+    const selectedValue = logSelectedValue();
+    fetchAndDisplayValues(selectedValue);
+});
 
 
 
@@ -484,23 +484,23 @@ function fetchAndDisplayValues(selectedMasterGroup) {
 
             let fetchedData = response.final_data;
             const parameterValues = response.parameter_values;
-            console.log("parameterValues",parameterValues)
+            console.log("parameterValues", parameterValues);
 
             window.fetchedResponse = response;
 
             // Extract data from response
             const lowMasterValues = fetchedData.low_master;
             const highMasterValues = fetchedData.high_master;
-            const probeNumbers = fetchedData.channel_no; // Get available probe numbers
+            const probeNumbers = fetchedData.channel_no;
             const masterGroups = fetchedData.master_grp;
             const digits = fetchedData.digits;
 
-            console.log('Probe Numbers:', probeNumbers); // Debugging output
+            console.log('Probe Numbers:', probeNumbers);
 
-            const availableContainers = probeNumbers.length; // Number of available containers
+            const availableContainers = probeNumbers.length;
 
             // First, remove all highlights
-            $(".cal-container").css("background-color", ""); 
+            $(".cal-container").css("background-color", "");
 
             // Loop through all 4 containers
             for (let index = 1; index <= 4; index++) {
@@ -510,19 +510,20 @@ function fetchAndDisplayValues(selectedMasterGroup) {
                     if (index <= availableContainers) {
                         // If index exists in probeNumbers, make it active
                         container.style.filter = "none"; // Remove blur
-                        
-                        // Apply background color immediately
-                        container.style.backgroundColor = (masterGroups[index - 1] == selectedMasterGroup) ? "orange" : "";
+                        container.style.display = "none"; // Force reflow
+                        container.offsetHeight; // Trigger reflow
+                        container.style.display = ""; 
 
-                        // Force reflow to ensure styles apply
-                        container.style.display = "none";
-                        setTimeout(() => {
-                            container.style.display = "";
-                        }, 10);
+                        // Apply correct background color
+                        if (masterGroups[index - 1] == selectedMasterGroup) {
+                            container.style.backgroundColor = "orange";
+                        } else {
+                            container.style.backgroundColor = "";
+                        }
                     } else {
                         // Otherwise, blur the remaining containers
                         container.style.filter = "blur(4px)";
-                        container.style.backgroundColor = ""; // Reset background
+                        container.style.backgroundColor = ""; 
                     }
                 }
 
@@ -538,20 +539,16 @@ function fetchAndDisplayValues(selectedMasterGroup) {
                         highMasterInput.value = highMasterValues[index - 1];
                     }
 
-                    const probeNumber = probeNumbers[index - 1]; // Get probe number
+                    const probeNumber = probeNumbers[index - 1];
                     const textareaId = mapProbeToTextareaId(probeNumber);
                     console.log(`Textarea ID for Probe Number ${probeNumber}:`, textareaId);
 
                     const textarea = document.getElementById(textareaId);
                     if (textarea) {
                         textarea.addEventListener('input', function () {
-                            // Get the value of the textarea and default to 0 if empty or invalid
                             const textareaValue = (textarea.value.trim() === '' || isNaN(parseFloat(textarea.value))) ? 0 : parseFloat(textarea.value);
-
-                            // Perform calculations
                             calculateAndUpdateDisplayOutput(
                                 index - 1,
-                               
                                 parameterValues,
                                 lowMasterValues[index - 1],
                                 highMasterValues[index - 1],
@@ -570,7 +567,6 @@ function fetchAndDisplayValues(selectedMasterGroup) {
                     const initialValue = (initialTextareaValue.trim() === '' || isNaN(parseFloat(initialTextareaValue))) ? 0 : parseFloat(initialTextareaValue);
                     calculateAndUpdateDisplayOutput(
                         index - 1,
-                        
                         parameterValues,
                         lowMasterValues[index - 1],
                         highMasterValues[index - 1],
@@ -602,7 +598,7 @@ function applyInitialBackgroundColor(selectedMasterGroup, masterGroups) {
                 container.style.backgroundColor = (masterGroups[index - 1] == selectedMasterGroup) ? "orange" : "";
             }
         }
-    }, 100);
+    }, 50); // Reduced timeout for faster execution
 }
 
 

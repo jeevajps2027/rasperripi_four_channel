@@ -1181,15 +1181,19 @@ function updateTableValues(step, indices, parameterNames, container) {
         return;
     }
 
-    indices.forEach((index, paramIndex) => {
-        let rowIndex = index + 1; // Convert 0-based index to 1-based row number
-        console.log("Updating rowIndex:", rowIndex);
+  
 
-        let paramInput = document.getElementById(`param_${rowIndex}`);
-        let curInput = document.getElementById(`cur_${rowIndex}`);
-        let maxInput = document.getElementById(`max_${rowIndex}`);
-        let minInput = document.getElementById(`min_${rowIndex}`);
-        let tirInput = document.getElementById(`tir_${rowIndex}`);
+    indices.forEach((index, paramIndex) => {  // Use paramIndex as the row index
+    let rowIndex = paramIndex + 1;  // Start from 0,1,2,3 instead of 2,3,4,5
+    let rowIndex_table = index + 1;
+    console.log("Updating rowInrowIndex_tabledex ssssssssssssssssssssssssss:", rowIndex_table);
+    console.log("Updating rowIndex:", rowIndex);
+
+        let paramInput = document.getElementById(`param_${rowIndex_table}`);
+        let curInput = document.getElementById(`cur_${rowIndex_table}`);
+        let maxInput = document.getElementById(`max_${rowIndex_table}`);
+        let minInput = document.getElementById(`min_${rowIndex_table}`);
+        let tirInput = document.getElementById(`tir_${rowIndex_table}`);
 
         if (!paramInput) {
             console.warn(`paramInput for Row ${rowIndex} not found.`);
