@@ -55,6 +55,7 @@ def measure_data(request):
                 max_value = entry.get('max')
                 min_value = entry.get('min')
                 tir_value = entry.get('tir')
+                statusCell = entry.get('statusCell')
                 overall_status = entry.get('overallStatusInput')
 
                 # Create a new MeasurementData object and save it to the database
@@ -75,7 +76,8 @@ def measure_data(request):
                     max_value=max_value,
                     min_value=min_value,
                     tir_value=tir_value,
-                    overall_status=overall_status
+                    statusCell = statusCell,
+                    overall_status=overall_status,
                 )
 
                 # Save the measurement data to the database

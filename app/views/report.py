@@ -3,7 +3,10 @@ from django.http import JsonResponse
 from django.shortcuts import render
 import pandas as pd
 from app.models import Data_Shift, MeasurementData, Parameter_Settings, paraTableData
-
+import json
+import pandas as pd
+from django.http import JsonResponse
+from app.models import MeasurementData, paraTableData
 
 def report(request):
     if request.method == 'POST':
@@ -46,7 +49,7 @@ def report(request):
             # Add parameter data keys dynamically
             parameter_data = paraTableData.objects.filter(
                 parameter_settings__part_model=part_model
-            ).values('parameter_name', 'usl', 'lsl')
+            ).values('parameter_name', 'usl', 'lsl').order_by('id')
 
             for param in parameter_data:
                 param_name = param['parameter_name']
@@ -98,14 +101,22 @@ def report(request):
                         else:
                             value_to_display = pv.output
 
-                        if pv.overall_status == 'ACCEPT':
-                            value_to_display = f'<span style="background-color: #00ff00; padding: 2px;">{value_to_display}</span>'
-                        elif pv.overall_status == 'REWORK':
-                            value_to_display = f'<span style="background-color: yellow; padding: 2px;">{value_to_display}</span>'
-                        elif pv.overall_status == 'REJECT':
-                            value_to_display = f'<span style="background-color: red; padding: 2px;">{value_to_display}</span>'
+                        status_cell_value = pv.statusCell  # Assuming statusCell contains ACCEPT, REWORK, or REJECT
+
+                        # Define color mapping for different statuses
+                        status_colors = {
+                            'ACCEPT': '#00ff00',  # Green
+                            'REWORK': 'yellow',
+                            'REJECT': 'red'
+                        }
+
+                        # Apply background color ONLY if mode is 'output'
+                        if mode == 'readings':
+                            bg_color = status_colors.get(status_cell_value, 'white')
+                            value_to_display = f'<span style="background-color: {bg_color}; padding: 5px; border-radius: 3px;">{value_to_display}</span>'
 
                         grouped_data[date]['Parameters'][key].add(value_to_display)
+
 
             # Convert grouped data into a DataFrame
             for date, group in grouped_data.items():
@@ -117,11 +128,24 @@ def report(request):
 
                 data_dict['Shift'].append(group['Shift'])
                 data_dict['Operator'].append(group['Operator'])
-                data_dict['Status'].append(group['Status'])
+
+                status = group['Status']
+
+                # Apply background color only to Status
+                status_colors = {
+                    'ACCEPT': '#00ff00',  # Green
+                    'REWORK': 'yellow',
+                    'REJECT': 'red',
+                }
+                status_color = status_colors.get(status, 'transparent')  # Default transparent if unknown
+                
+                status_display = f'<span style="background-color: {status_color}; color: black; padding: 5px; border-radius: 3px;">{status}</span>'
+                data_dict['Status'].append(status_display)
 
                 for key, values in group['Parameters'].items():
                     # Combine unique values and display only once
-                    data_dict[key].append("<br>".join(sorted(values)))
+                   data_dict[key].append("<br>".join(sorted(map(str, values))))
+
 
             df = pd.DataFrame(data_dict)
             df.index = df.index + 1
@@ -133,8 +157,6 @@ def report(request):
                 'total_count': len(unique_dates),
             })
 
-   
-           
     
     elif request.method == 'GET':
         shift_values = Data_Shift.objects.order_by('id').values_list('shift', 'shift_time').distinct()

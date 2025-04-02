@@ -119,6 +119,7 @@ class MeasurementData(models.Model):
     max_value = models.FloatField()
     min_value = models.FloatField()
     tir_value = models.FloatField()
+    statusCell = models.CharField(max_length=100)
     overall_status = models.CharField(max_length=100)
 
     def __str__(self):

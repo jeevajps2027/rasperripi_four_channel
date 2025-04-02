@@ -101,7 +101,7 @@ def measurement(request):
             last_id = entry['last_id']
             
             # Retrieve full record with this last_id
-            last_record = master_data.objects.filter(id=last_id).values('id', 'probe_number', 'e', 'd', 'o1').first()
+            last_record = master_data.objects.filter(id=last_id).values('id', 'probe_number', 'e', 'd', 'o1','a1','b1').first()
             
             if last_record:
                 last_probe_dict[probe_number] = last_record
@@ -115,13 +115,15 @@ def measurement(request):
                 "e": values.get("e"),
                 "d": values.get("d"),
                 "o1": values.get("o1"),
+                "a1": values.get("a1"),
+                "b1": values.get("b1"),
             }
             for probe_number, values in last_probe_dict.items()
         ]
 
          # Print values in the terminal
         for param in parameter_values:
-            print(f"Probe Name: {param['probe_number']}, ID: {param['id']}, e: {param['e']}, d: {param['d']}, o1: {param['o1']}")
+            print(f"Probe Name: {param['probe_number']}, ID: {param['id']}, e: {param['e']}, d: {param['d']}, o1: {param['o1']}, a1: {param['a1']}, b1: {param['b1']}")
 
 
         # Sending data in JSON format

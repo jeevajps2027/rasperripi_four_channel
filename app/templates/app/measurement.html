@@ -740,8 +740,6 @@ function sendPartModelToBackend(partModel) {
     });
 }
 
-
-
 let currentStep = 1; // Ensure currentStep is an integer
 
 // Function to update UI based on current step
@@ -755,12 +753,30 @@ function updateUI(responseData) {
         console.error("Error: stepNoArray is missing in responseData", responseData);
         return;
     }
+
     let indices = responseData.stepNoArray
         .map((step, index) => parseInt(step) === currentStep ? index : -1)
         .filter(index => index !== -1);
 
     console.log("Matching Indices:", indices);
 
+    let totalGauges = 4; // Total number of available gauges
+
+    // Loop through all containers to clear values & apply blur effect initially
+    for (let i = 1; i <= totalGauges; i++) {
+        let container = $('#sub_container_' + i);
+        
+        // Clear input fields inside the container
+        container.find('input, textarea').val('');
+        
+        // Explicitly clear Output_box
+        container.find('.Output_box').val('');
+        
+        // Apply blur effect to all initially
+        container.css({ 'filter': 'blur(5px)', 'pointer-events': 'none', 'opacity': '0.5' });
+    }
+
+    // Now, update only the required gauges
     indices.forEach((index, displayIndex) => {
         let gaugeIndex = displayIndex + 1; // 1-based indexing for UI elements
         console.log(`Updating Gauge ${gaugeIndex} with index ${index}`);
@@ -779,13 +795,14 @@ function updateUI(responseData) {
         const timer = responseData.timerArray[index];
         const digits = responseData.digitsArray[index];
 
-        let e_value = 0, d_value = 0, o1_value = 0;
+        let e_value = 0, d_value = 0, o1_value = 0, a1_value = 0;
         let probeData = responseData.parameterValues.find(item => item.probe_number === String(probeNumber));
 
         if (probeData) {
             e_value = probeData.e || 0;
             d_value = probeData.d || 0;
             o1_value = probeData.o1 || 0;
+            a1_value = probeData.a1 || 0;
             console.log(`Probe Number: ${probeData.probe_number}, E: ${e_value}, D: ${d_value}, O1: ${o1_value}`);
         } else {
             console.log("No Probe Data Found for Channel:", probeNumber);
@@ -801,9 +818,12 @@ function updateUI(responseData) {
         if (stepNo === currentStep.toString()) {
             displaySerialData(
                 parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, 
-                stepNo, autoMan, timer, digits, e_value, d_value, o1_value,gaugeIndex
+                stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value
             );
         }
+
+        // Remove blur effect from used containers
+        $('#sub_container_' + gaugeIndex).css({ 'filter': 'none', 'pointer-events': 'auto', 'opacity': '1' });
 
         // Handle textarea input dynamically
         const textareaId = mapProbeToTextareaId(probeNumber);
@@ -821,29 +841,12 @@ function updateUI(responseData) {
                 if (stepNo === currentStep.toString()) {
                     displaySerialData(
                         parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, 
-                        stepNo, autoMan, timer, digits, e_value, d_value, o1_value,gaugeIndex,textareaValue
+                        stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value
                     );
                 }
             }
         }
     });
-
-    let totalContainers = 4;
-
-// Apply blur effect and clear values for remaining containers
-for (let i = indices.length + 1; i <= totalContainers; i++) {
-    let container = $('#sub_container_' + i);
-    container.css({ 'filter': 'blur(5px)', 'pointer-events': 'none', 'opacity': '0.5' });
-
-    // Clear input fields inside the blurred container
-    container.find('input, textarea').val('');
-}
-
-// Remove blur effect from used containers
-for (let i = 1; i <= indices.length; i++) {
-    $('#sub_container_' + i).css({ 'filter': 'none', 'pointer-events': 'auto', 'opacity': '1' });
-}
-
 }
 
 
@@ -854,218 +857,352 @@ for (let i = 1; i <= indices.length; i++) {
 
 
 
-let displayOutputs = []; // Array to store displayOutput values for all steps
+
+// Global variables
+let displayOutputs = []; // Stores displayOutput values for all steps
+let isStart = true; // Tracks the current state of the button
+let updateInterval = null; // Stores interval reference
+let notificationBar;
+let button;
+
+// Initialize elements
+function initElements() {
+    button = document.getElementById('rest-btn');
+    notificationBar = document.getElementById('notification_bar');
+
+    if (!button || !notificationBar) {
+        console.error("Required elements not found!");
+        return;
+    }
+
+    button.addEventListener('click', handleAction);
+    document.addEventListener('keydown', handleKeyPress);
+    
+    updateUI(); // Initialize UI for step 1
+}
+
+// Handle button click
+function handleAction() {
+    if (isStart) {
+        startAction();
+    } else {
+        stopAction();
+    }
+    isStart = !isStart; // Toggle the state
+}
+
+// Start measurement
+function startAction(timer) {
+    console.log(`Start action triggered for Step ${currentStep}!`);
+    notificationBar.value = `MEASUREMENT IS STARTING FOR STEP ${currentStep}`;
+    updateButton(` STOP[F5]- Step ${currentStep}`, 'stop-btn');
+
+    
+    button.disabled = false; // Disable button
+            button.style.filter = ""; // Apply blur effect
+            button.style.pointerEvents = ""; // Disable interactions
 
 
-    // Example total steps (you can set this dynamically)
-
-// Wait for the DOM content to load
-document.addEventListener('DOMContentLoaded', () => {
-    const button = document.getElementById('rest-btn');
-    const notificationBar = document.getElementById('notification_bar');
-    let isStart = true; // Tracks the current state of the button
-    let updateInterval = null; // Stores interval reference
-
-    const handleAction = () => {
-        if (isStart) {
-            // Start action triggered
-            console.log(`Start action triggered for Step ${currentStep}!`);
-            notificationBar.value = `MEASUREMENT IS STARTING FOR STEP ${currentStep}`;
-
-            button.innerHTML = `STOP[F5] - Step ${currentStep}`; // Update button text
-            button.id = 'stop-btn'; // Change button ID
-
-            let indices = responseData.stepNoArray
-                .map((step, index) => parseInt(step) === currentStep ? index : -1)
-                .filter(index => index !== -1);
-
-            // Start dynamically updating updateMaxMinTir
-            updateInterval = setInterval(() => {
-                indices.forEach((index, displayIndex) => {
-                    let gaugeIndex = displayIndex + 1;
-                    if (gaugeOutputs[gaugeIndex] !== undefined) {
-                        updateMaxMinTir(gaugeIndex);
-                    }
-                });
-            }, 100); // Runs every 100ms
-
-
-          
-        } else {
-            // Stop action triggered
-            console.log(`Stop action triggered for Step ${currentStep}!`);
-            notificationBar.value = `MEASUREMENT IS COMPLETED FOR STEP ${currentStep}`;
-
-            button.innerHTML = `START[F4] - Step ${currentStep + 1}`; // Update button text
-            button.id = 'start-btn'; // Change button ID
-
-            clearInterval(updateInterval);
-
-            // Extract indices for the current step
-            let indices = responseData.stepNoArray
-                .map((step, index) => parseInt(step) === currentStep ? index : -1)
-                .filter(index => index !== -1);
-
-            let container = indices.length;
-
-            // Extract corresponding parameter names
-            let parameterNames = indices.map(index => responseData.parameterNameArray[index]);
-
-            console.log("Indices being passed to updateTableValues:", indices);
-            console.log("Container being passed to updateTableValues:", container);
-            console.log("Parameter names being passed to updateTableValues:", parameterNames);
-
-            updateTableValues(currentStep, indices, parameterNames,container);
-
-
-
-
-              // ✅ **Clear max, min, and tir fields when Stop is clicked**
-              indices.forEach((index, displayIndex) => {
-                let gaugeIndex = displayIndex + 1;
-
-                let maxField = document.getElementById(`max${gaugeIndex}`);
-                let minField = document.getElementById(`min${gaugeIndex}`);
-                let tirField = document.getElementById(`tir${gaugeIndex}`);
-
-                if (maxField) maxField.value = "";
-                if (minField) minField.value = "";
-                if (tirField) tirField.value = "";
-            });
-        
-
-            // Move to the next step if possible
-            if (currentStep < totalSteps) {
-                currentStep++; // Increment step
-            } else {
-                console.log("All steps completed!");
-                notificationBar.value = "YOU HAVE COMPLETED THE MEASUREMENT FOR THIS JOB. DO THE NEXT JOB.";
-                button.innerHTML = "START[F4]"; // Reset to initial state
-                button.id = "start-btn"; // Ensure correct ID
-                button.disabled = true; // Ensure it's not disabled
-                button.style.opacity = "0.5"; // Ensure full visibility
-                button.style.pointerEvents = "auto"; // Ensure it's clickable
-
-
-                if (currentStep === totalSteps) {
-                    console.log("Final Step Reached: Checking All Rows");
-
-                    let isRed = false;
-                    let isYellow = false;
-                    let overallStatus = document.getElementById("overall_status");
-
-                    for (let i = 1; i <= 21; i++) {
-                        let curInput = document.getElementById(`cur_${i}`);
-
-                        if (curInput) {
-                            let bgColor = window.getComputedStyle(curInput).backgroundColor;
-                            console.log(`Row ${i} Background Color: ${bgColor}`);
-
-                            if (bgColor === "rgb(255, 0, 0)") {  // Red color
-                                isRed = true;
-                            } else if (bgColor === "rgb(255, 255, 0)") {  // Yellow color
-                                isYellow = true;
-                            }
-                        } else {
-                            console.warn(`Row ${i} not found.`);
-                        }
-                    }
-
-                    // Set overall status based on color conditions
-                    if (isRed) {
-                        overallStatus.value = "REJECT";
-                        overallStatus.style.backgroundColor = "red";
-                    } else if (isYellow) {
-                        overallStatus.value = "REWORK";
-                        overallStatus.style.backgroundColor = "yellow";
-                    } else {
-                        overallStatus.value = "ACCEPT";
-                        overallStatus.style.backgroundColor = "#00ff00";
-                    }
-                }
-
-
-               
-
-
-                if (currentStep === totalSteps) {
-                    console.log("Final Step Reached: Collecting Data");
-
-                    let paramValues = [];
-                    let curValues = [];
-                    let maxValues = [];
-                    let minValues = [];
-                    let tirValues = [];
-
-                    for (let i = 1; i <= 21; i++) {
-                        let paramInput = document.getElementById(`param_${i}`);
-                        let curInput = document.getElementById(`cur_${i}`);
-                        let maxInput = document.getElementById(`max_${i}`);
-                        let minInput = document.getElementById(`min_${i}`);
-                        let tirInput = document.getElementById(`tir_${i}`);
-
-                        if (paramInput && curInput && maxInput && minInput && tirInput) {
-                            // Only add values if they are not empty
-                            if (paramInput.value.trim()) paramValues.push(paramInput.value.trim());
-                            if (curInput.value.trim()) curValues.push(curInput.value.trim());
-                            if (maxInput.value.trim()) maxValues.push(maxInput.value.trim());
-                            if (minInput.value.trim()) minValues.push(minInput.value.trim());
-                            if (tirInput.value.trim()) tirValues.push(tirInput.value.trim());
-                        } else {
-                            console.warn(`Row ${i} elements not found.`);
-                        }
-                    }
-
-                    console.log("Parameter Values:", paramValues);
-                    console.log("Current Values:", curValues);
-                    console.log("Max Values:", maxValues);
-                    console.log("Min Values:", minValues);
-                    console.log("TIR Values:", tirValues);
-
-                    DataToSend(paramValues, curValues, maxValues, minValues, tirValues);
-                }
-
-
-               
+    let indices = getStepIndices();
+    updateInterval = setInterval(() => {
+        indices.forEach((index, displayIndex) => {
+            let gaugeIndex = displayIndex + 1;
+            if (gaugeOutputs[gaugeIndex] !== undefined) {
+                updateMaxMinTir(gaugeIndex);
             }
+        });
+    }, 100);
+}
 
-            // Update the UI for the new step
-            updateUI(responseData);
+// Stop measurement
+function stopAction() {
+    console.log(`Stop action triggered for Step ${currentStep}!`);
+    notificationBar.value = `MEASUREMENT IS COMPLETED FOR STEP ${currentStep}`;
+    updateButton(`START[F4] - Step ${currentStep + 1}`, 'start-btn');
+    clearInterval(updateInterval);
+
+    let indices = getStepIndices();
+    let container = indices.length;
+    let parameterNames = indices.map(index => responseData.parameterNameArray[index]);
+
+    updateTableValues(currentStep, indices, parameterNames, container);
+    clearMaxMinTirFields(indices);
+    checkFinalStep();
+    updateUI(responseData);
+}
+
+// Get indices for current step
+function getStepIndices() {
+    return responseData.stepNoArray
+        .map((step, index) => parseInt(step) === currentStep ? index : -1)
+        .filter(index => index !== -1);
+}
+
+// Clear min/max/tir input fields
+function clearMaxMinTirFields(indices) {
+    indices.forEach((index, displayIndex) => {
+        let gaugeIndex = displayIndex + 1;
+        ['max', 'min', 'tir'].forEach(field => {
+            let input = document.getElementById(`${field}${gaugeIndex}`);
+            if (input) input.value = "";
+        });
+    });
+}
+
+// Check if it's the final step
+function checkFinalStep() {
+    if (currentStep < totalSteps) {
+        currentStep++;
+    } else {
+        console.log("All steps completed!");
+        notificationBar.value = "YOU HAVE COMPLETED THE MEASUREMENT FOR THIS JOB. DO THE NEXT JOB.";
+        updateButton("START[F4]", "start-btn");
+        finalizeUI();
+        checkOverallStatus();
+        collectFinalData();
+    }
+}
+
+// Check and update overall status based on row colors
+function checkOverallStatus() {
+    console.log("Final Step Reached: Checking All Rows");
+
+    let isRed = false;
+    let isYellow = false;
+    let overallStatus = document.getElementById("overall_status");
+
+    for (let i = 1; i <= 21; i++) {
+        let curInput = document.getElementById(`cur_${i}`);
+
+        if (curInput) {
+            let bgColor = window.getComputedStyle(curInput).backgroundColor;
+            console.log(`Row ${i} Background Color: ${bgColor}`);
+
+            if (bgColor === "rgb(255, 0, 0)") {  // Red color
+                isRed = true;
+            } else if (bgColor === "rgb(255, 255, 0)") {  // Yellow color
+                isYellow = true;
+            }
+        } else {
+            console.warn(`Row ${i} not found.`);
         }
+    }
 
-        isStart = !isStart; // Toggle the state
+    // Set overall status based on color conditions
+    if (isRed) {
+        overallStatus.value = "REJECT";
+        overallStatus.style.backgroundColor = "red";
+    } else if (isYellow) {
+        overallStatus.value = "REWORK";
+        overallStatus.style.backgroundColor = "yellow";
+    } else {
+        overallStatus.value = "ACCEPT";
+        overallStatus.style.backgroundColor = "#00ff00";
+    }
+}
+
+// Disable button after completion
+function finalizeUI() {
+    button.disabled = true;
+    button.style.opacity = "0.5";
+    button.style.pointerEvents = "auto";
+}
+
+
+
+// Collect data from the final step
+function collectFinalData() {
+    console.log("🚀 Final Step Reached: Collecting Data");
+
+    let paramValues = [], curValues = [], maxValues = [], minValues = [], tirValues = [];
+    let curBackgroundColors = [], statusValues = [];
+
+    // Define the color-to-status mapping
+    const statusMap = {
+        "rgb(0, 255, 0)": "ACCEPT",  // Green
+        "rgb(255, 255, 0)": "REWORK", // Yellow
+        "rgb(255, 0, 0)": "REJECT"    // Red
     };
 
-    // Add click event listener for the button
-    button.addEventListener('click', handleAction);
+    for (let i = 1; i <= 21; i++) {
+        ['param', 'cur', 'max', 'min', 'tir'].forEach(field => {
+            let input = document.getElementById(`${field}_${i}`);
+            if (input && input.value.trim()) {
+                eval(`${field}Values`).push(input.value.trim());
 
-    // Add keydown event listener for keyboard shortcuts
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'F4' && isStart) {
-            event.preventDefault();
-            handleAction();
-        } else if (event.key === 'F5' && !isStart) {
-            event.preventDefault();
-            handleAction();
+                // Log collected value
+                console.log(`${field.toUpperCase()}_${i}:`, input.value.trim());
+
+                // If the field is "cur", collect and map background color to status
+                if (field === 'cur') {
+                    let bgColor = window.getComputedStyle(input).backgroundColor;
+                    let status = statusMap[bgColor] || "UNKNOWN"; // Default to UNKNOWN if no match
+
+                    curBackgroundColors.push(bgColor);
+                    statusValues.push(status);
+
+                    console.log(`CUR_${i} Background Color:`, bgColor);
+                    console.log(`CUR_${i} Status:`, status);
+                }
+            } else {
+                console.log(`${field.toUpperCase()}_${i}: (No Data or Element Missing)`);
+            }
+        });
+    }
+
+    console.log("📊 Collected Data:");
+    console.log("paramValues:", paramValues);
+    console.log("curValues:", curValues);
+    console.log("curBackgroundColors:", curBackgroundColors);
+    console.log("statusValues:", statusValues);
+    console.log("maxValues:", maxValues);
+    console.log("minValues:", minValues);
+    console.log("tirValues:", tirValues);
+
+    DataToSend(paramValues, curValues, maxValues, minValues, tirValues,statusValues);
+}
+
+
+// Handle keypress for F4 (Start) and F5 (Stop)
+function handleKeyPress(event) {
+    if ((event.key === 'F4' && isStart) || (event.key === 'F5' && !isStart)) {
+        event.preventDefault();
+        handleAction();
+    }
+}
+
+// Update button text and ID
+function updateButton(text, id) {
+    button.innerHTML = text;
+    button.id = id;
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', initElements);
+
+
+
+
+
+
+
+
+
+function handleActionStart(timer) { 
+    const button = document.querySelector('[id="rest-btn"],[id="start-btn"]');
+    console.log("button",button)
+    const notificationBar = document.getElementById('notification_bar');
+
+    if (!button) {
+        console.error("Button not found!");
+        return;
+    }
+
+    let updateInterval = null;
+    let stepNow = currentStep; // Store the current step at function start
+
+    console.log(`Start action triggered for Step ${stepNow}!`);
+    notificationBar.value = `MEASUREMENT IS STARTING FOR STEP ${stepNow}`;
+
+    button.innerHTML = `STOP[F5] - Step ${stepNow}`;
+    button.id = 'stop-btn';
+
+    button.disabled = true; // Disable button
+            button.style.filter = "blur(3px)"; // Apply blur effect
+            button.style.pointerEvents = "none"; // Disable interactions
+
+    let indices = responseData.stepNoArray
+        .map((step, index) => parseInt(step) === stepNow ? index : -1)
+        .filter(index => index !== -1);
+
+    updateInterval = setInterval(() => {
+        indices.forEach((index, displayIndex) => {
+            let gaugeIndex = displayIndex + 1;
+            if (gaugeOutputs[gaugeIndex] !== undefined) {
+                updateMaxMinTir(gaugeIndex);
+            }
+        });
+    }, 100);
+
+    // ✅ Stop after `timer` seconds and proceed to the next step
+    setTimeout(() => {
+        console.log(`Stop action triggered for Step ${stepNow}!`);
+        notificationBar.value = `MEASUREMENT IS COMPLETED FOR STEP ${stepNow}`;
+
+        button.innerHTML = `START[F4] - Step ${stepNow + 1}`;  // Now correctly displays next step
+        button.id = 'start-btn';
+        clearInterval(updateInterval);
+
+        // Extract indices for the current step
+        let container = indices.length;
+        let parameterNames = indices.map(index => responseData.parameterNameArray[index]);
+
+        updateTableValues(stepNow, indices, parameterNames, container);
+
+        // ✅ Clear max, min, and tir fields
+        indices.forEach((index, displayIndex) => {
+            let gaugeIndex = displayIndex + 1;
+            let maxField = document.getElementById(`max${gaugeIndex}`);
+            let minField = document.getElementById(`min${gaugeIndex}`);
+            let tirField = document.getElementById(`tir${gaugeIndex}`);
+
+            if (maxField) maxField.value = "";
+            if (minField) minField.value = "";
+            if (tirField) tirField.value = "";
+        });
+
+        button.disabled = false; // Disable button
+            button.style.filter = ""; // Apply blur effect
+            button.style.pointerEvents = ""; // Disable interactions
+
+
+        // ✅ Ensure `currentStep` only increments once per execution
+        if (button.id === 'start-btn') {
+            currentStep = stepNow + 1; // Ensure only a single increment
+            updateUI(responseData);
+            if (currentStep > totalSteps) {
+       
+        console.log("All steps completed!");
+        notificationBar.value = "YOU HAVE COMPLETED THE MEASUREMENT FOR THIS JOB. DO THE NEXT JOB.";
+        updateButton("START[F4]", "start-btn");
+        finalizeUI();
+        checkOverallStatus();
+        collectFinalData();
+    }
         }
-    });
 
-    // Initialize the UI for step 1
-    updateUI();
-});
-
-
-   
- 
-
+    }, timer * 1000);
+}
 
 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-let gaugeOutputs = {}; 
-function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex) {
+
+let gaugeOutputs = {};  
+let probeIntervals = {}; // Store intervals for each Step, Probe, and Gauge
+let activeStep = null; // Track the current step
+
+function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value) {
+    console.log("StepNo:", stepNo);
     console.log("parameterName:", parameterName);
+    console.log("autoMan:", autoMan);
+    console.log("timer:", timer);
+    console.log("a1_value:", a1_value);
+    console.log("gaugeIndex:", gaugeIndex);
+    console.log("probeNumber:", probeNumber);
+
+    let notificationBar = document.getElementById('notification_bar');
+    const button = document.querySelector('[id="rest-btn"],[id="start-btn"]');
+
+    if (autoMan) {
+        notificationBar.value = "MEASUREMENT FOR THE CURRENT STEP IS IN AUTOMATIC MODE";
+        button.disabled = true;
+        button.style.filter = "blur(3px)";
+        button.style.pointerEvents = "none";
+    } else {
+        notificationBar.value = "DO MEASUREMENT FOR CURRENT STEP MANUALLY";
+    }
 
     const textareaId = mapProbeToTextareaId(probeNumber);
     const textarea = document.getElementById(textareaId);
@@ -1075,41 +1212,61 @@ function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, ls
         return;
     }
 
-    let lastValue = null; // Store the last value to detect changes
+    // **If the step changes, clear all previous intervals**
+    if (activeStep !== stepNo) {
+        console.log(`Step changed from ${activeStep} to ${stepNo}. Clearing previous intervals.`);
+        clearAllIntervals();
+        activeStep = stepNo; // Update active step
+    }
+
+    // **Unique interval key for Step, Probe, and Gauge**
+    const intervalKey = `${stepNo}_${probeNumber}_${gaugeIndex}`;
+
+    // **Prevent multiple intervals for the same Step, Probe, and Gauge**
+    if (probeIntervals[intervalKey]) {
+        clearInterval(probeIntervals[intervalKey]); // Remove old interval
+        delete probeIntervals[intervalKey]; // Clean up the reference
+    }
+
+    let lastValue = null;
 
     function updateCalculation() {
         const newSerialData = !isNaN(parseFloat(textarea.value)) ? parseFloat(textarea.value) : 0;
 
-        if (newSerialData === lastValue) return; // Prevent unnecessary calculations
-
-        lastValue = newSerialData; // Update last value
+        if (newSerialData === lastValue) return; // Prevent unnecessary updates
+        lastValue = newSerialData;
 
         const numericEValue = parseFloat(e_value) || 0;
         const numericDValue = parseFloat(d_value) || 0;
         const numericO1Value = parseFloat(o1_value) || 0;
 
         let displayOutput = numericEValue + (newSerialData * numericDValue + numericO1Value);
-        displayOutput = parseFloat(displayOutput.toFixed(4)); // Ensure precision
+        displayOutput = parseFloat(displayOutput.toFixed(digits));
 
         if (!isNaN(displayOutput)) {
-            gaugeOutputs[gaugeIndex] = displayOutput; // Store latest value
+            // Store output separately per Step, Probe, and Gauge
+            if (!gaugeOutputs[stepNo]) {
+                gaugeOutputs[stepNo] = {};
+            }
+            if (!gaugeOutputs[stepNo][probeNumber]) {
+                gaugeOutputs[stepNo][probeNumber] = {};
+            }
+            gaugeOutputs[stepNo][probeNumber][gaugeIndex] = displayOutput;
         }
 
-        console.log(`displayOutput for Gauge ${gaugeIndex}:`, displayOutput);
+        console.log(`displayOutput for Gauge ${gaugeIndex} (Step ${stepNo}, Probe ${probeNumber}):`, displayOutput);
 
         if (isNaN(displayOutput)) {
             console.error("Invalid displayOutput:", displayOutput);
             return;
         }
 
-        // Display output in the correct output box based on gaugeIndex
-        let outputBoxId = `Output_box${gaugeIndex}`;
+        let outputBoxId = `Output_box${gaugeIndex}`; // Unique output box ID
         let outputBox = document.getElementById(outputBoxId);
 
         if (outputBox) {
-            outputBox.value = displayOutput; // Set the calculated value in the respective output box
+            outputBox.value = displayOutput;
 
-            // Apply background color based on displayOutput value
             if (displayOutput < ltl) {
                 outputBox.style.backgroundColor = "red";
             } else if (displayOutput >= ltl && displayOutput < lsl) {
@@ -1125,15 +1282,26 @@ function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, ls
             console.warn(`Output box ${outputBoxId} not found`);
         }
 
-      
+        if (autoMan && newSerialData >= a1_value) {
+            console.log(`Triggering handleActionStart() because ${newSerialData} >= ${a1_value}`);
+            setTimeout(() => {
+                handleActionStart(timer);
+            }, 1000);
+        }
     }
 
-    // Check for updates every 100ms
-    setInterval(updateCalculation, 100);
+    // **Set a new interval for this Step, Probe, and Gauge**
+    probeIntervals[intervalKey] = setInterval(updateCalculation, 100);
 }
 
-
-
+// **Function to clear all previous intervals when step changes**
+function clearAllIntervals() {
+    for (let key in probeIntervals) {
+        clearInterval(probeIntervals[key]);
+        delete probeIntervals[key];
+    }
+    console.log("All previous intervals cleared.");
+}
 
 
 
@@ -1256,7 +1424,7 @@ function updateTableValues(step, indices, parameterNames, container) {
 
 
 
-function DataToSend(paramValues, curValues, maxValues, minValues, tirValues) {
+function DataToSend(paramValues, curValues, maxValues, minValues, tirValues,statusValues) {
     $('#loading_spinner').show();
     
     const overallStatusInput = document.getElementById("overall_status").value;
@@ -1294,6 +1462,7 @@ function DataToSend(paramValues, curValues, maxValues, minValues, tirValues) {
             max: maxValues[i] || "",
             min: minValues[i] || "",
             tir: tirValues[i] || "",
+            statusCell : statusValues[i] || "",
             overallStatusInput: overallStatusInput,
         });
     }
