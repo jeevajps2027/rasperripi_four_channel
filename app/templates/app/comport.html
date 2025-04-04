@@ -1,15 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{% static 'fontawesome-free-6.7.2-web/css/all.min.css' %}">
+    <script src="{% static 'jquery-jquery-f79d5f1/dist/jquery.min.js' %}"></script>
 
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/comport.css' %}">
+  
+    <link rel="stylesheet" href="{% static 'css/comportsss.css' %}">
 
-    <title>Report</title>  
+    <title>SETTINGS</title>  
 </head>
 <body>
 <div class="container-1">
@@ -366,13 +367,130 @@ document.getElementById("close_btn").addEventListener("click", function() {
 
 
 
-                <div id="table3" class="table hidden">
-                    <h3>Container 3 Header</h3>
-                    <p>This is container 3 content.</p>
-                </div>
+            <div id="table3" class="table hidden">
+                <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
+                    <h2><b>Backup Date</b></h2>
+                </center>
+                <div class="custom-border" style="margin-top: 30px;"> 
+                    <label for="backup" style="margin-top: 30px;">BACKUPDATE:</label>
+                    <input type="datetime-local" class="backup-data" value="{{ backup_date }}" id="backup_data" name="backup_data" style="width: 200px;"><br><br>
+                    <label for="confirm_backup" style="margin-top: 30px;" hidden>Confirm Backup:</label>
+                    <input type="checkbox" id="confirm_backup" name="confirm_backup" hidden><br><br>
+                    <textarea style="height: 100%; width: 70%; font-weight: bold; font-size: 1vw;" readonly>
+                        {% if backup_date %}
+                            {{ backup_date.backup_date }}
+                        {% else %}
+                            No backup_date is available.
+                        {% endif %}
+                    </textarea>
+                </div><br>
+                <a href="{% url 'measurement' %}">
+                    <button type="button" id="cancel-btn"><b>Cancel</b></button>
+                </a>
+                <button type="button" id="save-btn-4"><b>Save</b></button>                  
             </div>
         </div>
-        
+    </div>
+    <script>        
+    // Add event listener for save button
+    document.getElementById('save-btn-4').addEventListener('click', function () {
+
+const tableId = $('#save-btn-4').closest('div.table').attr('id');
+console.log('Table ID:', tableId); // Console log the table ID
+
+// Get the values from the input fields
+const backupDate = document.getElementById('backup_data').value; // Get input value
+const confirmBackup = document.getElementById('confirm_backup').checked; // Get checkbox state
+
+// Function to format the date and time
+function formatDateTime(dateTime) {
+const date = new Date(dateTime); // Convert to Date object
+const day = date.getDate().toString().padStart(2, '0');
+const month = (date.getMonth() + 1).toString().padStart(2, '0'); // January is 0
+const year = date.getFullYear();
+let hours = date.getHours();
+const minutes = date.getMinutes().toString().padStart(2, '0');
+const ampm = hours >= 12 ? 'PM' : 'AM'; // Determine AM or PM
+hours = hours % 12; // Convert to 12-hour format
+hours = hours ? hours : 12; // 0 should be converted to 12
+const timeString = hours + ':' + minutes + ':00 ' + ampm; // Add seconds and AM/PM
+return `${day}-${month}-${year} ${timeString}`; // Final formatted string
+}
+
+if (!backupDate || isNaN(new Date(backupDate).getTime())) {
+    alert('Please select a valid backup date before saving.');
+    return;
+}
+
+// Format the backup date
+const formattedDate = formatDateTime(backupDate);
+
+// Prepare the data to send
+const data = {
+request_type: 'backup_date',  // Specify the request type
+backup_data: formattedDate,   // Use the formatted date
+confirm_backup: confirmBackup // Send checkbox state
+};
+
+sessionStorage.setItem('showOperatorSettings', 'true');
+
+// Send an AJAX POST request
+fetch('/comport/', { // Leave the URL empty to use the current endpoint
+method: 'POST',
+headers: {
+    'Content-Type': 'application/json', // JSON content type
+    'X-CSRFToken': getCSRFToken() // Include CSRF token for security
+},
+body: JSON.stringify(data) // Convert data to JSON string
+})
+.then(response => response.json())
+.then(result => {
+if (result.status === 'success') {
+    alert('Backup settings saved successfully!');
+    location.reload(); // Reload the page
+} else {
+    alert('Failed to save backup settings. Please try again.');
+}
+})
+.catch(error => console.error('Error:', error));
+});
+
+// After page loads, check sessionStorage and perform actions
+$(document).ready(function() {
+// Hide table1 before showing table2
+document.getElementById('table2').classList.add('hidden'); // Hide table1 explicitly
+document.getElementById('table1').classList.add('hidden'); // Hide table1 explicitly
+
+const showOperatorSettings = sessionStorage.getItem('showOperatorSettings');
+
+if (showOperatorSettings === 'true') {
+// Simulate the click of the "OPERATOR SETTINGS" button
+document.querySelector('button[onclick="showSubContainer(2)"]').click();
+
+// Make the table3 visible
+document.getElementById('table3').classList.remove('hidden');
+
+// Clear the sessionStorage after using it
+sessionStorage.removeItem('showOperatorSettings');
+} else {
+// If showOperatorSettings is not set, ensure table3 is shown on page load
+document.getElementById('table1').classList.remove('hidden');
+}
+});
+
+
+// Function to get CSRF token from cookies
+function getCSRFToken() {
+const cookieValue = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('csrftoken='))
+    ?.split('=')[1];
+return cookieValue;
+}
+
+</script>        
+
+         
         
         <div class="sub-container-3 sub-container">
             <div class="left_container">

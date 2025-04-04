@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import render
-from app.models import Operator_setting, User_Data
+from app.models import BackupSettings, Operator_setting, User_Data
 import json
 from django.views.decorators.csrf import csrf_exempt
 
@@ -44,8 +44,39 @@ def login(request):
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid request format'}, status=400)
     elif request.method == 'GET':
+        # Fetch all operator names
         operators = Operator_setting.objects.all()
         operator_names = [operator.operator_name for operator in operators]
-        return render(request, 'app/login.html', {'operator_names': operator_names})
+
+        # Get the latest BackupSettings entry
+        backup_settings = BackupSettings.objects.order_by('-id').first()
+
+        # Prepare context for BackupSettings
+        if backup_settings:
+            # Print both backup_date and confirm_backup values in the terminal
+            print('ID:', backup_settings.id)
+            print('Backup Date:', backup_settings.backup_date)
+            print('Confirm Backup:', backup_settings.confirm_backup)
+
+            # Add backup settings data to the context
+            context = {
+                'operator_names': operator_names,
+                'backup_date': backup_settings.backup_date,
+                'confirm_backup': backup_settings.confirm_backup,
+                'id': backup_settings.id
+            }
+        else:
+            # Handle empty backup settings
+            context = {
+                'operator_names': operator_names,
+                'backup_date': None,
+                'confirm_backup': None,
+                'id': None
+            }
+
+        # Render the template with the combined context
+        return render(request, 'app/login.html', context)
+
     else:
+        # Handle invalid HTTP method
         return JsonResponse({'status': 'error', 'message': 'Invalid HTTP method'}, status=405)

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.urls import path,include
 from django.conf.urls.static import static
 from .views import measurement,master,parameter,spc,changed_name,shutdown,report_xlsx,report_pdf,report,measurement_count
-from .views import comport,login,data,measure_data,delete_measure_data,spcCharts
+from .views import comport,login,data,measure_data,delete_measure_data,spcCharts,backup
 
 
 urlpatterns = [
@@ -22,6 +22,7 @@ urlpatterns = [
     path('spcCharts/',spcCharts,name="spcCharts"),
     path('shutdown/',shutdown,name="shutdown"),
     path('changed_name/',changed_name,name="changed_name"),
+    path('backup/', backup, name='backup'),
     ]
 
 if settings.DEBUG:

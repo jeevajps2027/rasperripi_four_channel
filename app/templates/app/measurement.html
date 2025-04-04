@@ -1,14 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'fontawesome-free-6.7.2-web/css/all.min.css' %}">
+    <script src="{% static 'jquery-jquery-f79d5f1/dist/jquery.min.js' %}"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <title>Measurement</title>
+
+    <title>MEASUREMENT</title>
    
-    {% load static %}
+  
     <link rel="stylesheet" href="{% static 'css/measurement.css'%}">
     
     
@@ -547,6 +549,8 @@ function sendPartModelToBackend(partModel) {
                 // Listen for "Enter" key press
                 punchNoField.addEventListener('keydown', function (event) {
                     if (event.key === 'Enter') {
+                        event.preventDefault();
+                        document.activeElement.blur(); 
                         const inputValue = punchNoField.value;
                         const charLockValue = response.char_lock_value;
                         const charLockLimitValue = response.char_lock_limit_value;
@@ -894,7 +898,7 @@ function handleAction() {
 // Start measurement
 function startAction(timer) {
     console.log(`Start action triggered for Step ${currentStep}!`);
-    notificationBar.value = `MEASUREMENT IS STARTING FOR STEP ${currentStep}`;
+    notificationBar.value = `MEASUREMENT IS STARTING FOR STEP ${currentStep} MANUALLY`;
     updateButton(` STOP[F5]- Step ${currentStep}`, 'stop-btn');
 
     
@@ -917,7 +921,7 @@ function startAction(timer) {
 // Stop measurement
 function stopAction() {
     console.log(`Stop action triggered for Step ${currentStep}!`);
-    notificationBar.value = `MEASUREMENT IS COMPLETED FOR STEP ${currentStep}`;
+    notificationBar.value = `MEASUREMENT IS COMPLETED FOR STEP ${currentStep} MANUALLY`;
     updateButton(`START[F4] - Step ${currentStep + 1}`, 'start-btn');
     clearInterval(updateInterval);
 
@@ -1102,7 +1106,7 @@ function handleActionStart(timer) {
     let stepNow = currentStep; // Store the current step at function start
 
     console.log(`Start action triggered for Step ${stepNow}!`);
-    notificationBar.value = `MEASUREMENT IS STARTING FOR STEP ${stepNow}`;
+    notificationBar.value = `MEASUREMENT IS STARTING FOR STEP ${stepNow} AUTOMATICALLY`;
 
     button.innerHTML = `STOP[F5] - Step ${stepNow}`;
     button.id = 'stop-btn';
@@ -1127,7 +1131,7 @@ function handleActionStart(timer) {
     // ✅ Stop after `timer` seconds and proceed to the next step
     setTimeout(() => {
         console.log(`Stop action triggered for Step ${stepNow}!`);
-        notificationBar.value = `MEASUREMENT IS COMPLETED FOR STEP ${stepNow}`;
+        notificationBar.value = `MEASUREMENT IS COMPLETED FOR STEP ${stepNow}AUTOMATICALLY `;
 
         button.innerHTML = `START[F4] - Step ${stepNow + 1}`;  // Now correctly displays next step
         button.id = 'start-btn';
@@ -1286,7 +1290,7 @@ function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, ls
             console.log(`Triggering handleActionStart() because ${newSerialData} >= ${a1_value}`);
             setTimeout(() => {
                 handleActionStart(timer);
-            }, 1000);
+            }, 500);
         }
     }
 

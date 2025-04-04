@@ -1,16 +1,15 @@
-from reportlab.lib.pagesizes import letter, landscape
-from reportlab.pdfgen import canvas
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from bs4 import BeautifulSoup
+from reportlab.lib.pagesizes import landscape, letter
+from reportlab.pdfgen import canvas
 import os
 from datetime import datetime
-
+import textwrap
 
 @csrf_exempt
 def report_pdf(request):
     if request.method == 'POST':
-        # Get form data
         from_date = request.POST.get('from_date', '')
         to_date = request.POST.get('to_date', '')
         mode = request.POST.get('mode', '')
@@ -19,99 +18,118 @@ def report_pdf(request):
         status = request.POST.get('status', '')
         total_count = request.POST.get('total_count', '')
 
-        # Get the table HTML
         table_html = request.POST.get('table_html')
-
         if table_html:
-            # Parse the table HTML
             soup = BeautifulSoup(table_html, 'html.parser')
-            thead = soup.find('thead')
             rows = soup.find_all('tr')
 
-            # Create a PDF canvas with landscape orientation
+            if not rows:
+                return JsonResponse({'success': False, 'message': 'No table rows found.'})
+
+            first_row = rows[0].find_all(['th', 'td'])
+            col_count = len(first_row)
+
             current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
             file_name = f'report_data_{current_datetime}.pdf'
 
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
+            downloads_dir = r'C:\Program Files\Four_Channel_Rasperripi\pdf_files'
             file_path = os.path.join(downloads_dir, file_name)
 
             c = canvas.Canvas(file_path, pagesize=landscape(letter))
             width, height = landscape(letter)
 
-            # Add headers to the PDF
-            c.setFont("Helvetica-Bold", 10)
-            c.drawString(30, height - 50, f'From Date: {from_date}')
-            c.drawString(200, height - 50, f'To Date: {to_date}')
-            c.drawString(30, height - 70, f'Mode: {mode}')
-            c.drawString(200, height - 70, f'Part Model: {part_model}')
-            c.drawString(30, height - 90, f'Shift: {shift}')
-            c.drawString(200, height - 90, f'Status: {status}')
-            c.drawString(30, height - 110, f'Total Count: {total_count}')
+            c.setFont("Helvetica-Bold", 8)
 
-            # Define manual column widths (in points)
-            manual_col_widths = [40, 100, 180, 43, 70, 62, 62, 62, 62, 60]  # Adjust these values manually
+            # First Row (4 values)
+            c.drawString(30, height - 40, f'From Date: {from_date}')
+            c.drawString(200, height - 40, f'To Date: {to_date}')
+            c.drawString(400, height - 40, f'Mode: {mode}')
+            c.drawString(600, height - 40, f'Part Model: {part_model}')
 
-            # Set font size for header
-            c.setFont("Helvetica-Bold", 5)
+            # Second Row (3 values)
+            c.drawString(30, height - 60, f'Shift: {shift}')
+            c.drawString(200, height - 60, f'Status: {status}')
+            c.drawString(400, height - 60, f'Total Count: {total_count}')
 
-            # Draw <thead> data
+
+            sr_no_width = 40  
+            remaining_width = width - 60 - sr_no_width
+            other_col_count = col_count - 1  
+            col_width = remaining_width / other_col_count if other_col_count > 0 else remaining_width
+
             x_offset = 30
-            y_offset = height - 150  # Start position for the header row
-            header_cells = thead.find_all('th')
-            for i, th in enumerate(header_cells):
-                c.drawString(x_offset + 2, y_offset - 10, th.text.strip())  # Adjusted text position
-                c.rect(x_offset, y_offset - 20, manual_col_widths[i], 20)   # Header cell box
-                x_offset += manual_col_widths[i]
+            y_offset = height - 75  # Reduced from height - 110
 
-            # Start position for table rows
-            y_offset -= 25
-            row_limit = 25  # Rows per page
-            row_count = 0   # Track rows per page
-            c.setFont("Helvetica", 6)
+            # Process headers
+            c.setFont("Helvetica-Bold", 4)
+            max_header_height = 0
+            header_cells = rows[0].find_all(['th', 'td'])
+            wrapped_headers = [textwrap.wrap(th.text.strip(), width=10) for th in header_cells]
+            max_header_height = max(len(w) for w in wrapped_headers) * 5  
 
-            for row in rows[1:]:  # Process rows from tbody
-                cells = row.find_all(['td', 'th'])
+            row_height = max_header_height + 12  # Extra 10px margin added
+
+            for i, wrapped_text in enumerate(wrapped_headers):
+                col_w = sr_no_width if i == 0 else col_width  
+                x_text_offset = x_offset + (col_w / 2)
+
+                # Adjust y position for margin
+                total_text_height = len(wrapped_text) * 5  
+                y_text_offset = y_offset - ((row_height - total_text_height) / 2) - 5  
+
+                for line in wrapped_text:
+                    text_width = c.stringWidth(line, "Helvetica-Bold", 4)
+                    c.drawString(x_text_offset - (text_width / 2), y_text_offset, line)
+                    y_text_offset -= 5  
+
+                c.rect(x_offset, y_offset - row_height, col_w, row_height)
+                x_offset += col_w
+
+            y_offset -= row_height  
+
+            # Process table rows
+            row_limit = 30  
+            row_count = 0
+            c.setFont("Helvetica", 4)
+
+            for row in rows[1:]:
+                cells = row.find_all(['td', 'th'])  
                 x_offset = 30
 
-                # Track maximum row height
-                max_row_height = 15
+                wrapped_texts = [textwrap.wrap(cell.text.strip(), width=10) for cell in cells]
+                max_line_count = max(len(w) for w in wrapped_texts)
 
-                for i, cell in enumerate(cells):
-                    # Get colspan and rowspan attributes
-                    colspan = int(cell.get('colspan', 1))
-                    rowspan = int(cell.get('rowspan', 1))
+                row_height = max_line_count * 5 + 12  # Extra 10px margin added
 
-                    # Calculate width and height for the cell
-                    cell_width = sum(manual_col_widths[i:i + colspan])  # Total width for colspan
-                    cell_height = max_row_height * rowspan  # Total height for rowspan
+                for i, wrapped_text in enumerate(wrapped_texts):
+                    col_w = sr_no_width if i == 0 else col_width  
+                    x_text_offset = x_offset + (col_w / 2)
 
-                    # Draw text inside the cell
-                    cell_text = cell.text.strip()
-                    c.drawString(x_offset + 2, y_offset - 10, cell_text)
+                    # Adjust y position for margin
+                    total_text_height = len(wrapped_text) * 5  
+                    y_text_offset = y_offset - ((row_height - total_text_height) / 2) - 5  
 
-                    # Draw the outline for the cell
-                    c.rect(x_offset, y_offset - max_row_height, cell_width, max_row_height)
+                    for line in wrapped_text:
+                        text_width = c.stringWidth(line, "Helvetica", 4)
+                        c.drawString(x_text_offset - (text_width / 2), y_text_offset, line)
+                        y_text_offset -= 5  
 
-                    # Update x-offset for the next cell
-                    x_offset += cell_width
+                    c.rect(x_offset, y_offset - row_height, col_w, row_height)
+                    x_offset += col_w
 
-                # Move down for the next row
                 row_count += 1
-                y_offset -= max_row_height
+                y_offset -= row_height
 
-                # Check if rows exceed the limit for the current page
                 if row_count >= row_limit:
                     c.showPage()
                     row_count = 0
-                    y_offset = height - 50  # Reset y-offset for the new page
-                    c.setFont("Helvetica", 6)
+                    y_offset = height - 50
+                    c.setFont("Helvetica", 4)  
 
-            # Save the PDF
             c.save()
-
-            # Return success response
             return JsonResponse({'success': True, 'message': f'File saved at: {file_path}'})
+
         else:
             return JsonResponse({'success': False, 'message': 'No table data provided.'})
-    else:
-        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})

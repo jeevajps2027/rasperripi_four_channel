@@ -1,14 +1,14 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'fontawesome-free-6.7.2-web/css/all.min.css' %}">
+    <script src="{% static 'jquery-jquery-f79d5f1/dist/jquery.min.js' %}"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/logins.css' %}">
 
     <title>LOGIN</title>
 
@@ -18,14 +18,21 @@
 
     <div class="container_1_image">
         <div class="image_container">
-            <img src="static/images/general_acc.png" alt="Description of Image" />
+            <img src="static/images/Gauge.jpg" alt="Description of Image" />
 
         </div>
         <div class="name_container">
-            <p class="header">GENERAL METROLOGY</p>
+            <p class="header">GAUGE LOGIC DAQ - SPC</p>
             
         </div>
     </div> 
+    <div><div class="box" id="clock-box" hidden></div>
+
+<div style="margin-left: 800px; margin-top: 20px;">
+    <input id="back_date" type="text" value=" {{ backup_date }}" hidden>
+    <input id="confirm" type="text" value=" {{ confirm_backup }}" hidden>
+    <input id="idValue" type="text" value=" {{ id }}" hidden>
+</div></div>
 
     <div id="notification"></div>
      
@@ -79,6 +86,157 @@ window.addEventListener('DOMContentLoaded', (event) => {
         });
         
 
+        
+        let alertShown = false; // Track if the alert has been shown
+
+function updateClock() {
+    var id_value = document.getElementById("idValue").value.trim();
+    var backupDateStr = document.getElementById("back_date").value.trim();
+    var confirmValue = document.getElementById("confirm").value.trim();
+    var currentDate = new Date();
+
+    // Display current date and time in the clock box
+    var hours = currentDate.getHours();
+    var minutes = currentDate.getMinutes();
+    var seconds = currentDate.getSeconds();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Handle midnight (0 hours)
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+    var day = currentDate.getDate();
+    var month = currentDate.getMonth() + 1; // Month is zero-based
+    var year = currentDate.getFullYear();
+    var currentDateFormatted = day + '-' + month + '-' + year + ' ' + currentTime;
+    document.getElementById("clock-box").innerHTML = currentDateFormatted;
+
+    // Parse the backup date string (format: dd-mm-yyyy hh:mm:ss AM/PM)
+    var [backupDay, backupMonth, backupYearAndTime] = backupDateStr.split('-');
+    var [backupYear, backupTime] = backupYearAndTime.split(' ');
+    var [backupHourMinSec, backupAmPm] = backupTime.split(' ');
+    var [backupHours, backupMinutes, backupSeconds] = backupHourMinSec.split(':');
+
+    // Convert the backup date and time to a Date object
+    backupHours = parseInt(backupHours);
+    if (backupAmPm === 'PM' && backupHours < 12) backupHours += 12; // Adjust for PM
+    if (backupAmPm === 'AM' && backupHours === 12) backupHours = 0; // Handle midnight (12 AM)
+
+    var backupDate = new Date(
+        parseInt(backupYear), 
+        parseInt(backupMonth) - 1, 
+        parseInt(backupDay),
+        backupHours,
+        parseInt(backupMinutes),
+        parseInt(backupSeconds)
+    );
+
+    // If current date is greater than or equal to backup date and confirm value is 'False'
+    if (currentDate >= backupDate && confirmValue === 'False' && !alertShown) {
+        // Display the custom alert message
+        alert("The backup date and time have been reached!");
+
+        confirmValue = 'True';
+        document.getElementById("confirm").value = confirmValue; // Update the DOM element if needed
+        alertShown = true; // Set alertShown to true to prevent future alerts
+
+        // Send confirmValue and backupDate to the Django view
+        sendDataToBackend(confirmValue, backupDateStr, id_value);
+    }
+
+    // Call this function again after 1 second
+    setTimeout(updateClock, 1000);
+}
+
+// Optional: Event listener to reset alertShown when the confirm value is updated
+document.getElementById("confirm").addEventListener('change', function() {
+    if (this.value === 'True') {
+        alertShown = false; // Reset alertShown if confirmation changes
+    }
+});
+
+// Start the clock
+updateClock();
+
+
+function sendDataToBackend(confirmValue, backupDate, id_value) {
+    console.log('Sending Data:', {
+        confirm: confirmValue,
+        backup_date: backupDate,
+        idValue: id_value,
+    });
+    
+    fetch('/backup/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Ensure CSRF token is sent for security
+        },
+        body: JSON.stringify({
+            confirm: confirmValue,
+            backup_date: backupDate,
+            idValue: id_value,
+        })
+    })
+    .then(response => {
+        return response.json(); // Parse the JSON response
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            console.log('Backup completed successfully!');
+            displayNotification(data.message, 'success'); // Show success message
+        } else {
+            console.error('Backup failed');
+            displayNotification(data.message, 'error'); // Show error message
+        }
+    })
+    .catch(error => {
+        console.error('Error sending data:', error);
+        displayNotification('An error occurred while sending data.', 'error'); // Show error if fetch fails
+    });
+}
+
+function displayNotification(message, type) {
+    const notification = document.getElementById('notification');
+    
+    // Set the notification message and style based on the type ('success' or 'error')
+    notification.innerHTML = message;
+    if (type === 'success') {
+        notification.style.backgroundColor = 'green';  // Green background for success
+    } else {
+        notification.style.backgroundColor = 'red';    // Red background for error
+    }
+    
+    // Show the notification
+    notification.style.display = 'block';
+
+    // Hide the notification after 5 seconds
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 5000);
+}
+
+// Function to get the CSRF token for Django
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Check if this cookie string begins with the name we want
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Call the function when the page loads
+window.onload = function() {
+    updateClock(); // Start the clock display
+};
 
 
         function getCSRFToken() {

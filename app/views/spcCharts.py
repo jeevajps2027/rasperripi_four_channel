@@ -28,7 +28,7 @@ def generate_r_chart(readings, sample_size):
     r_values = [np.max(group) - np.min(group) for group in subgroups]
 
     # Plot X-bar and R charts
-    fig, axs = plt.subplots(2, 1, figsize=(12, 6))
+    fig, axs = plt.subplots(2, 1, figsize=(10, 5))
     axs[0].plot(x_bar, marker='o', label='X-bar')
     axs[0].set_title('X-bar Chart')
     axs[0].set_xlabel('Subgroup')
@@ -79,7 +79,7 @@ def generate_readings_table(subgroups, x_bars, ranges):
 
 def generate_histogram(readings):
     """Generates a histogram and returns the image as a base64 string."""
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 5))
     ax.hist(readings, bins=10, color='skyblue', edgecolor='black')
     ax.set_title('Histogram')
     ax.set_xlabel('Readings')

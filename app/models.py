@@ -132,3 +132,11 @@ class part_retrived(models.Model):
     part_name = models.CharField(max_length=255)  # Field to store the part name
 
 
+
+class BackupSettings(models.Model):
+    backup_date = models.CharField(max_length=100)  # You can use DateTimeField if needed
+    confirm_backup = models.BooleanField(default=False)  # New field to store checkbox value
+
+
+    def __str__(self):
+        return str(self.backup_date)

@@ -1,13 +1,15 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'fontawesome-free-6.7.2-web/css/all.min.css' %}">
+    <script src="{% static 'jquery-jquery-f79d5f1/dist/jquery.min.js' %}"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <title>Parameter</title>
-    {% load static %}
+
+    <title>PARAMETER</title>
+   
     <link rel="stylesheet" href="{% static 'css/parameters.css' %}">
     <meta name="csrf-token" content="{{ csrf_token }}">
 
@@ -492,6 +494,7 @@ $(document).ready(function () {
             let stepNo = null;
             let hasParameter = false;
             let usl = null, lsl = null, utl = null, ltl = null;
+            let emptyFields = [];
 
             $(this).find("td").each(function (index, td) {
                 const colName = [
@@ -526,39 +529,57 @@ $(document).ready(function () {
                 if (colName === "USL") usl = parseFloat(row[colName]);
                 if (colName === "LTL") ltl = parseFloat(row[colName]);
                 if (colName === "UTL") utl = parseFloat(row[colName]);
+
+                // **Check for empty required fields**  
+                if (hasParameter && row[colName] === "" && !["AUTO_MAN", "TIMER"].includes(colName)) {
+                    emptyFields.push(colName);
+                }
             });
 
-            // Skip validation for rows without a PARAMETER_NAME
+             // **Validation: If AUTO_MAN is checked, TIMER must have a value**
+    if (row["AUTO_MAN"] === "on" && !row["TIMER"]) {
+        validationFailed = true;
+        validationMessage += `Row ${rowIndex + 1}: TIMER is required when AUTO_MAN is checked.\n`;
+        $(this).addClass("error-row");
+    } else {
+        $(this).removeClass("error-row");
+    }
+
+            // **Skip validation for rows without a PARAMETER_NAME**
             if (!hasParameter) {
                 return true; // Equivalent to 'continue' in jQuery each()
             }
 
-            if (!stepGroups[stepNo]) stepGroups[stepNo] = [];
-
-            stepGroups[stepNo].push({
-                rowIndex: rowIndex + 1, // 1-based index for user-friendly messages
-                autoMan: row["AUTO_MAN"],
-                timer: row["TIMER"]
-            });
-
-            // Validate USL > LSL and UTL > LTL
-            if (usl !== null && lsl !== null && usl <= lsl) {
+            if (emptyFields.length > 0) {
                 validationFailed = true;
-                validationMessage += `Row ${rowIndex + 1}: USL must be greater than LSL.\n`;
-                $(this).addClass("error-row");
-            }
-            if (utl !== null && ltl !== null && utl <= ltl) {
-                validationFailed = true;
-                validationMessage += `Row ${rowIndex + 1}: UTL must be greater than LTL.\n`;
+                validationMessage += `Row ${rowIndex + 1}: Missing values in columns [${emptyFields.join(", ")}]\n`;
                 $(this).addClass("error-row");
             } else {
                 $(this).removeClass("error-row");
             }
 
+            // **Group rows by STEP_NO for further validation**
+            if (!stepGroups[stepNo]) stepGroups[stepNo] = [];
+            stepGroups[stepNo].push({
+                rowIndex: rowIndex + 1,
+                autoMan: row["AUTO_MAN"],
+                timer: row["TIMER"]
+            });
+
+            // **Validate USL > LSL and UTL > LTL**
+            if (usl !== null && lsl !== null && usl <= lsl) {
+                validationFailed = true;
+                validationMessage += `Row ${rowIndex + 1}: USL must be greater than LSL.\n`;
+            }
+            if (utl !== null && ltl !== null && utl <= ltl) {
+                validationFailed = true;
+                validationMessage += `Row ${rowIndex + 1}: UTL must be greater than LTL.\n`;
+            }
+
             tableData.push(row);
         });
 
-        // Validate AUTO_MAN and TIMER for each STEP_NO only if PARAMETER_NAME is present
+        // **Validate AUTO_MAN and TIMER for each STEP_NO**
         for (let stepNo in stepGroups) {
             const rowsInStep = stepGroups[stepNo];
             let anyChecked = false;
@@ -600,6 +621,7 @@ $(document).ready(function () {
             table_data: tableData
         };
         console.log("postData", postData);
+ 
 
         $.ajax({
             url: "/parameter/",

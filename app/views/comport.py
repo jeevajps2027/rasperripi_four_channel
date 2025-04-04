@@ -1,7 +1,7 @@
 import json
 from django.http import JsonResponse
 from django.shortcuts import render
-from app.models import Operator_setting, ComportSetting,Data_Shift  # Import your models
+from app.models import BackupSettings, Operator_setting, ComportSetting,Data_Shift  # Import your models
 import serial.tools.list_ports  # Import list_ports module
 
 
@@ -27,7 +27,24 @@ def comport(request):
                         return JsonResponse({"status": "success", "message": "Operator deleted successfully"})
                     except Operator_setting.DoesNotExist:
                         return JsonResponse({"status": "error", "message": "Operator not found"})
+            
+            elif request_type == 'backup_date':
+                # Get the backup date from the request data
+                backup_date = data.get('backup_data')
+                confirm_backup = data.get('confirm_backup')  # Retrieve checkbox value
 
+                
+                print("Backup Date Settings:")
+                print("backup_date:", backup_date)  # Print the received backup date
+                print("Confirm Backup Checkbox:", confirm_backup)  # Print checkbox value
+
+
+                BackupSettings.objects.create(
+                    backup_date=backup_date,
+                    confirm_backup=confirm_backup  # Save the checkbox state
+                )
+
+                return JsonResponse({'status': 'success'})
 
             elif request_type == "shift_settings":
                 shift = data.get('shift')
@@ -131,12 +148,14 @@ def comport(request):
         operators_value = Operator_setting.objects.all().order_by('id')
         comport_data = ComportSetting.objects.all()
         shift_settings = Data_Shift.objects.all().order_by('id')
+        backup_date = BackupSettings.objects.order_by('-id').first()
         print('your data from shift_settings is this:',shift_settings)
         print('your comport data is thiss::',comport_data)
         context = {
             "operators_value": operators_value,
             "port_list": port_list,
             'shift_settings': shift_settings,
+             'backup_date': backup_date,
         }
     
         return render(request, "app/comport.html", context)

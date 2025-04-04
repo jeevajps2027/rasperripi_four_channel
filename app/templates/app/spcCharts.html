@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,20 +7,23 @@
 
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-
-    <!-- Add XLSX library for Excel conversion -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-
-<!-- Add jsPDF library for PDF conversion -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="{% static 'fontawesome-free-6.7.2-web/css/all.min.css' %}">
+    <script src="{% static 'jquery-jquery-f79d5f1/dist/jquery.min.js' %}"></script>
 
 
-    {% load static %}
+    <script src="{% static 'js-xlsx-master/dist/xlsx.full.min.js' %}"></script>
+
+    <!-- Add jsPDF library for PDF conversion -->
+    
+    <script src="{% static 'parallax-jsPDF-57cbe94/dist/jspdf.umd.min.js' %}"></script>
+    
+    <script src="{% static 'plotly-plotly.js-c8e0bef/dist/plotly.min.js' %}"></script>
+
+
+
     <link rel="stylesheet" href="{% static 'css/spc_charts.css' %}">
 
-    <title>Report</title>  
+    <title>SPC REPORTS</title>  
 </head>
 
 <body>

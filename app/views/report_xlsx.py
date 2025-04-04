@@ -79,7 +79,7 @@ def report_xlsx(request):
             
             
             # Save the XLSX file to Downloads directory with dynamic name
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
+            downloads_dir = r'C:\Program Files\Four_Channel_Rasperripi\xlsx_files'
             file_path = os.path.join(downloads_dir, file_name)
             wb.save(file_path)
 
