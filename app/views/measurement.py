@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 import json
 from django.views.decorators.csrf import csrf_exempt
-from app.models import MeasurementData, Parameter_Settings,part_retrived, ComportSetting, Data_Shift,User_Data, master_data, paraTableData
+from app.models import MeasurementData, Parameter_Settings, ParameterFactor,part_retrived, ComportSetting, Data_Shift,User_Data, master_data, paraTableData
 import serial.tools.list_ports
 from collections import defaultdict
 from django.db.models import Count
@@ -66,6 +66,8 @@ def measurement(request):
             auto_man_array.append(data.auto_man)
             timer_array.append(data.timer)
             digits_array.append(data.digits)
+
+        parameter_factor_values = ParameterFactor.objects.filter(part_model=part_model_get).values('parameter_name','method','value').order_by('id')
 
 
         filtered_data = Parameter_Settings.objects.filter(
@@ -146,6 +148,7 @@ def measurement(request):
             'timer_array': timer_array,
             'digits_array': digits_array,
             'parameter_values':parameter_values,
+            'parameter_factor_values':list(parameter_factor_values),
         })
     
     elif request.method == 'GET':

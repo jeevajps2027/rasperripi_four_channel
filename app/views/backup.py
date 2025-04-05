@@ -100,6 +100,7 @@ def backup_database_to_sql():
             "app_measurementdata",
             "app_part_retrived",
             "app_backupsettings",
+            "app_parameterfactor",
         ]
 
         # Prepare the backup SQL file

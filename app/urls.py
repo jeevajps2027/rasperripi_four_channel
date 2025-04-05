@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.urls import path,include
 from django.conf.urls.static import static
-from .views import measurement,master,parameter,spc,changed_name,shutdown,report_xlsx,report_pdf,report,measurement_count
-from .views import comport,login,data,measure_data,delete_measure_data,spcCharts,backup
+from .views import measurement,master,parameter,spc,changed_name,report_xlsx,report_pdf,report,measurement_count
+from .views import comport,login,data,measure_data,delete_measure_data,spcCharts,backup,get_parameters,get_parameter_value
 
 
 urlpatterns = [
@@ -20,9 +20,10 @@ urlpatterns = [
     path('report_pdf/',report_pdf,name="report_pdf"),
     path('spc/',spc,name="spc"),
     path('spcCharts/',spcCharts,name="spcCharts"),
-    path('shutdown/',shutdown,name="shutdown"),
     path('changed_name/',changed_name,name="changed_name"),
     path('backup/', backup, name='backup'),
+    path('get_parameters/',get_parameters,name='get_parameters'),
+    path('get_parameter_value/',get_parameter_value,name='get_parameter_value'),
     ]
 
 if settings.DEBUG:

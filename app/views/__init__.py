@@ -11,7 +11,8 @@ from .measurement_count import measurement_count
 from .report_xlsx import report_xlsx
 from .report_pdf import report_pdf
 from .spc import spc
-from .shutdown import shutdown
 from .changed_name import changed_name
 from .spcCharts import spcCharts
 from .backup import backup
+from .factorretrive import get_parameters
+from .factorretrive import get_parameter_value

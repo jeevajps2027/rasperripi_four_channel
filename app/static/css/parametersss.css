@@ -284,12 +284,14 @@ button#left_arrow_btn:active ,button#right_arrow_btn:active {
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    height: 350px;
+    width: 300px;
 }
 
 .num-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 18px;
+    width: 20%;
+    height: 12%;
+    font-size: 1.5vw;
     margin: 5px;
     cursor: pointer;
     border: none;

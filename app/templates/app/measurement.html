@@ -708,6 +708,7 @@ function sendPartModelToBackend(partModel) {
                 autoManArray: response.auto_man_array,
                 timerArray: response.timer_array,
                 digitsArray: response.digits_array,
+                parameter_factor_values:response.parameter_factor_values,
             };
 
 
@@ -798,6 +799,7 @@ function updateUI(responseData) {
         const autoMan = responseData.autoManArray[index];
         const timer = responseData.timerArray[index];
         const digits = responseData.digitsArray[index];
+        const parameter_factor_values = responseData.parameter_factor_values;
 
         let e_value = 0, d_value = 0, o1_value = 0, a1_value = 0;
         let probeData = responseData.parameterValues.find(item => item.probe_number === String(probeNumber));
@@ -822,7 +824,7 @@ function updateUI(responseData) {
         if (stepNo === currentStep.toString()) {
             displaySerialData(
                 parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, 
-                stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value
+                stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value,parameter_factor_values
             );
         }
 
@@ -845,7 +847,7 @@ function updateUI(responseData) {
                 if (stepNo === currentStep.toString()) {
                     displaySerialData(
                         parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, 
-                        stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value
+                        stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value,parameter_factor_values
                     );
                 }
             }
@@ -1187,7 +1189,7 @@ let gaugeOutputs = {};
 let probeIntervals = {}; // Store intervals for each Step, Probe, and Gauge
 let activeStep = null; // Track the current step
 
-function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value) {
+function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, lsl, usl, ltl, utl, stepNo, autoMan, timer, digits, e_value, d_value, o1_value, gaugeIndex, a1_value,parameter_factor_values) {
     console.log("StepNo:", stepNo);
     console.log("parameterName:", parameterName);
     console.log("autoMan:", autoMan);
@@ -1195,6 +1197,9 @@ function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, ls
     console.log("a1_value:", a1_value);
     console.log("gaugeIndex:", gaugeIndex);
     console.log("probeNumber:", probeNumber);
+
+
+    console.log("parameter_factor_values jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj",parameter_factor_values)
 
     let notificationBar = document.getElementById('notification_bar');
     const button = document.querySelector('[id="rest-btn"],[id="start-btn"]');
@@ -1246,6 +1251,20 @@ function displaySerialData(parameterName, probeNumber, lowMaster, highMaster, ls
 
         let displayOutput = numericEValue + (newSerialData * numericDValue + numericO1Value);
         displayOutput = parseFloat(displayOutput.toFixed(digits));
+
+         // 🔁 Apply factor-based logic here
+        for (let i = 0; i < parameter_factor_values.length; i++) {
+            const factor = parameter_factor_values[i];
+            const factorName = factor.parameter_name;
+            const method = factor.method;
+            const factorValue = parseFloat(factor.value);
+
+            // Compare current parameter name
+            if (factorName === parameterName) {
+                displayOutput = method === '+' ? displayOutput + factorValue : displayOutput - factorValue;
+                displayOutput = parseFloat(displayOutput.toFixed(digits));
+            }
+        }
 
         if (!isNaN(displayOutput)) {
             // Store output separately per Step, Probe, and Gauge

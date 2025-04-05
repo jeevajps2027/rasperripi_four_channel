@@ -10,7 +10,7 @@
 
     <title>PARAMETER</title>
    
-    <link rel="stylesheet" href="{% static 'css/parameters.css' %}">
+    <link rel="stylesheet" href="{% static 'css/parametersss.css' %}">
     <meta name="csrf-token" content="{{ csrf_token }}">
 
    
@@ -206,16 +206,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function createAlphabetPad() {
-        buttons = [];
-        for (let key in alphabetKeys) {
-            buttons.push(createButton(key, function () { handleAlphabetClick(key); }));
-            if (buttons.length % 3 === 0) numberPad.appendChild(document.createElement("br"));
-        }
-        numberPad.appendChild(document.createElement("br"));
-        buttons.push(createButton("TAB", addSpace));  // ✅ Add space button
-        buttons.push(createButton("C", clearLastCharacter));
-        buttons.push(createButton("OK", hideNumberPad));
+    buttons = [];
+    for (let key in alphabetKeys) {
+        buttons.push(createButton(key, function () { handleAlphabetClick(key); }));
+        if (buttons.length % 3 === 0) numberPad.appendChild(document.createElement("br"));
     }
+
+    numberPad.appendChild(document.createElement("br"));
+
+    // ➕ Add symbol buttons
+    const symbols = ["+", "-", "*", "/", "%"];
+    symbols.forEach((sym, index) => {
+        buttons.push(createButton(sym));
+        if ((index + 1) % 3 === 0) numberPad.appendChild(document.createElement("br"));
+    });
+
+    numberPad.appendChild(document.createElement("br"));
+    buttons.push(createButton("TAB", addSpace));  // ✅ Add space button
+    buttons.push(createButton("C", clearLastCharacter));
+    buttons.push(createButton("OK", hideNumberPad));
+}
+
 
     function createButton(value, callback) {
         const button = document.createElement("button");

@@ -140,3 +140,17 @@ class BackupSettings(models.Model):
 
     def __str__(self):
         return str(self.backup_date)
+
+
+class ParameterFactor(models.Model):
+    part_model = models.CharField(max_length=255)
+    parameter_name = models.CharField(max_length=255)
+    method = models.CharField(max_length=10, choices=[('+', '+'), ('-', '-')])  # Choose between '+' or '-'
+    value = models.CharField(max_length=255)
+
+    # Add a unique constraint to part_model and parameter_name to ensure there is only one per combination
+    class Meta:
+        unique_together = ('part_model', 'parameter_name')  # Ensures unique (part_model, parameter_name) combination
+
+    def __str__(self):
+        return f"{self.part_model} - {self.parameter_name}"

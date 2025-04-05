@@ -8,7 +8,7 @@
     <script src="{% static 'jquery-jquery-f79d5f1/dist/jquery.min.js' %}"></script>
 
   
-    <link rel="stylesheet" href="{% static 'css/comportsss.css' %}">
+    <link rel="stylesheet" href="{% static 'css/comport_values.css' %}">
 
     <title>SETTINGS</title>  
 </head>
@@ -118,6 +118,8 @@ document.getElementById("parameter-settings").addEventListener("click", function
                 <button id="operators" class="toggle-btn">OPERATORS</button>
                 <button id="shift_settings" class="toggle-btn">SHIFT SETTINGS</button>
                 <button id="backup" class="toggle-btn">BACKUP</button>
+                
+                <button id="parameter_factor" class="toggle-btn">PARAMETER FACTOR</button>
             </div>
             <div class="right_container" style="overflow-y: auto;">
                 <table id="table1" class="table hidden">
@@ -369,7 +371,7 @@ document.getElementById("close_btn").addEventListener("click", function() {
 
             <div id="table3" class="table hidden">
                 <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
-                    <h2><b>Backup Date</b></h2>
+                    <h2><b>BACKUP DATE</b></h2>
                 </center>
                 <div class="custom-border" style="margin-top: 30px;"> 
                     <label for="backup" style="margin-top: 30px;">BACKUPDATE:</label>
@@ -389,8 +391,7 @@ document.getElementById("close_btn").addEventListener("click", function() {
                 </a>
                 <button type="button" id="save-btn-4"><b>Save</b></button>                  
             </div>
-        </div>
-    </div>
+      
     <script>        
     // Add event listener for save button
     document.getElementById('save-btn-4').addEventListener('click', function () {
@@ -488,7 +489,221 @@ const cookieValue = document.cookie
 return cookieValue;
 }
 
-</script>        
+</script>    
+
+
+
+
+<div id="table4" class="table hidden">
+    <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
+        <h1><b>PARAMETER FACTOR</b></h1>
+    </center>
+
+    <div class="form-group">
+        <label for="part_model" class="form-label">PART MODEL</label>
+        {% if part_model_values %}
+            <select id="part_model" name="part_model" class="form-control" required onchange="sendPartModelValue()">
+                <option value="" disabled selected>Select a part model</option>
+                {% for part_model in part_model_values %}
+                    <option value="{{ part_model }}">{{ part_model }}</option>
+                {% endfor %}
+            </select>
+        {% else %}
+            <p>No part models available.</p>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="parameter_name" class="form-label">PARAMETER NAME</label>
+        <select id="parameter_name" name="parameter_name" class="form-control" required>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="method" class="form-label">METHOD</label>
+        <select id="method" name="method" class="form-control" required>
+            <option value="+">+</option>
+            <option value="-">-</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="value" class="form-label">VALUE</label>
+        <input type="text" id="value" name="value" class="form-control" required>
+    </div>
+
+    <a href="{% url 'measurement' %}">
+        <button type="button" id="cancel-btn"><b>Cancel</b></button>
+    </a>
+    <button type="submit" id="save-btn-5"><b>Save</b></button>
+</div>
+
+<script>
+     // Function to send the selected part_model value to the backend
+function sendPartModelValue() {
+    const selectElement = document.getElementById('part_model');
+    const selectedValue = selectElement.value;
+
+    console.log("selectedValue",selectedValue)
+
+    // Sending a POST request to the backend
+    fetch('/comport/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') // Add CSRF token
+        },
+        body: JSON.stringify({ part_model: selectedValue })
+    })
+        .then(response => response.json())
+        .then(data => {
+            //console.log('Response from server:', data);
+
+            // Now update the parameter_name dropdown
+            const parameterNameDropdown = document.getElementById('parameter_name');
+            
+            // Clear the current options
+            parameterNameDropdown.innerHTML = '';
+
+            // Add the default "Select the parameter name" option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select the parameter name';
+            parameterNameDropdown.appendChild(defaultOption);
+
+            // Check if there are parameter names returned
+            if (data.parameter_names && data.parameter_names.length > 0) {
+                // Add an initial "Select" option
+               
+
+                // Populate the dropdown with parameter names
+                data.parameter_names.forEach(param => {
+                    const option = document.createElement('option');
+                    option.value = param;
+                    option.textContent = param;
+                    parameterNameDropdown.appendChild(option);
+                });
+            } else {
+                // If no parameter names, display a message
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No parameters available';
+                parameterNameDropdown.appendChild(option);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+
+
+// Function to send all form data to the backend when the form is submitted
+function handleSaveButtonClick(event) {
+    event.preventDefault();  // Prevent the default form submission behavior
+
+    const partModel = document.getElementById('part_model').value;
+    const parameterName = document.getElementById('parameter_name').value;
+    const method = document.getElementById('method').value;
+    const value = document.getElementById('value').value;
+
+    // Prepare the data to send in the request
+    const data = {
+        request_type :"parameter_factor",
+        part_model: partModel,
+        parameter_name: parameterName,
+        method: method,
+        value: value
+    };
+
+    console.log("the data whic is send from the frntbend",data)
+
+    // Send a POST request to save the data
+    fetch('/comport/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')  // Add CSRF token
+        },
+        body: JSON.stringify(data)
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Data saved successfully:', data);
+            alert('Data saved successfully!');
+        })
+        .catch(error => {
+            //console.error('Error:', error);
+            alert('An error occurred while saving data.');
+        });
+}
+
+// Attach event listener to the save button
+document.getElementById('save-btn-5').addEventListener('click', handleSaveButtonClick);
+
+document.getElementById('part_model').addEventListener('change', function() {
+    const partModel = this.value;
+    
+    if (partModel) {
+        fetch(`/get_parameters/?part_model=${partModel}`)
+            .then(response => response.json())
+            .then(data => {
+                const parameterDropdown = document.getElementById('parameter_name');
+                parameterDropdown.innerHTML = '<option value="" disabled selected>Select a parameter</option>';
+
+                data.parameter_names.forEach(param => {
+                    const option = document.createElement('option');
+                    option.value = param;
+                    option.textContent = param;
+                    parameterDropdown.appendChild(option);
+                });
+
+                document.getElementById('value').value = ''; // Clear the value field
+            })
+            .catch(error => console.error('Error fetching parameters:', error));
+    }
+});
+
+document.getElementById('parameter_name').addEventListener('change', function() {
+    const partModel = document.getElementById('part_model').value;
+    const parameterName = this.value;
+
+    if (partModel && parameterName) {
+        fetch(`/get_parameter_value/?part_model=${partModel}&parameter_name=${parameterName}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('value').value = data.value || ''; // Set the retrieved value
+                document.getElementById('method').value = data.method || ''; // Set the retrieved method
+            })
+            .catch(error => console.error('Error fetching value:', error));
+    }
+});
+
+
+        // Helper function to get the CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        // Send the value when the page is loaded
+        window.onload = () => {
+            sendPartModelValue();
+        };
+</script>
+
+    </div>
+    </div>
 
          
         
@@ -500,7 +715,7 @@ return cookieValue;
             </div>
             <div class="right_container">
                
-                <div id="table4" class="table hidden" style="height: 100%;width: 100%;">
+                <div id="table5" class="table hidden" style="height: 100%;width: 100%;">
                     <center style="color: purple; text-shadow: 2px 2px 4px rgb(240, 118, 240);">
                         <h1><b>CNC SETTINGS</b></h1>
                     </center>
@@ -531,7 +746,7 @@ return cookieValue;
                 
                 
                 </div>
-                <div id="table5" class="table hidden" style="width: 100%;">
+                <div id="table6" class="table hidden" style="width: 100%;">
                     <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
                         <thead style="background-color: gray;">
                             <tr class="custom-row">
@@ -556,7 +771,7 @@ return cookieValue;
                 </div>
                 
 
-                <div id="table6" class="table hidden" style="width: 100%;">
+                <div id="table7" class="table hidden" style="width: 100%;">
                     <table style="border-collapse: collapse; width: 100%; border: 1px solid black;">
                         <thead style="background-color: gray;">
                             <tr class="custom-row">
@@ -733,7 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const containers = document.querySelectorAll('.table');
 
     // Ensure table1 and table4 are visible initially
-    const initialTables = ['table1', 'table4'];
+    const initialTables = ['table1', 'table5'];
     initialTables.forEach(tableId => {
         const table = document.getElementById(tableId);
         if (table) {

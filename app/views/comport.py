@@ -1,7 +1,7 @@
 import json
 from django.http import JsonResponse
 from django.shortcuts import render
-from app.models import BackupSettings, Operator_setting, ComportSetting,Data_Shift  # Import your models
+from app.models import BackupSettings, Operator_setting, ComportSetting,Data_Shift, Parameter_Settings, ParameterFactor, paraTableData  # Import your models
 import serial.tools.list_ports  # Import list_ports module
 
 
@@ -11,7 +11,10 @@ def comport(request):
             # Parse the incoming JSON data
             data = json.loads(request.body)
             print('Your data from comport:', data)
+            part_model = data.get('part_model')
+           
 
+           
 
             request_type = data[0].get("request_type") if isinstance(data, list) and len(data) > 0 else data.get("request_type")  # Safely get the request type
 
@@ -66,8 +69,29 @@ def comport(request):
 
                 return JsonResponse({"status": "success", "message": "Shift settings saved successfully!"})
     
+            elif request_type == 'parameter_factor':
+                part_model = data.get('part_model')
+                parameter_name = data.get('parameter_name')
+                method = data.get('method')
+                value = data.get('value')
 
-            
+                 # Check if a ParameterFactor record already exists with the same part_model and parameter_name
+                probe_factor, created = ParameterFactor.objects.update_or_create(
+                    part_model=part_model,
+                    parameter_name=parameter_name,
+                    defaults={'method': method, 'value': value}  # Update method and value if exists
+                )
+                if part_model:
+                    try:
+                        param_setting = Parameter_Settings.objects.get(part_model=part_model)
+                        table_data = paraTableData.objects.filter(parameter_settings=param_setting)
+
+                        parameter_names = list(table_data.values_list('parameter_name', flat=True))
+                        return JsonResponse({'parameter_names': parameter_names})
+
+                    except Parameter_Settings.DoesNotExist:
+                        return JsonResponse({'error': 'Part model not found'}, status=404)
+                
 
             elif request_type == "comport":
                 # Handle comport data
@@ -149,6 +173,7 @@ def comport(request):
         comport_data = ComportSetting.objects.all()
         shift_settings = Data_Shift.objects.all().order_by('id')
         backup_date = BackupSettings.objects.order_by('-id').first()
+        part_model_values = Parameter_Settings.objects.values_list('part_model', flat=True).distinct()
         print('your data from shift_settings is this:',shift_settings)
         print('your comport data is thiss::',comport_data)
         context = {
@@ -156,6 +181,7 @@ def comport(request):
             "port_list": port_list,
             'shift_settings': shift_settings,
              'backup_date': backup_date,
+             'part_model_values':part_model_values,
         }
     
         return render(request, "app/comport.html", context)
